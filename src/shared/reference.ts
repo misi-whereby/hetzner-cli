@@ -22,7 +22,9 @@ const PREAMBLE = `\
 # OUTPUT MODES:
 #   All commands default to human-readable formatted tables.
 #   Add --json to any command to get machine-readable JSON output.
+#   Add --output-schema to print the TypeScript type of the --json output (no API call).
 #   Example: hetzner server list --json | jq '.[].server.server_ip'
+#   Example: hetzner server list --output-schema
 #
 # SECTIONS: Use "hetzner reference --section robot|cloud|auction" to show only one section.
 
@@ -58,6 +60,7 @@ hetzner [command] [options]
   -u, --user <username>       Robot API username
   -p, --password <password>   Robot API password (use "-" to read from stdin)
   --json                      Output raw JSON instead of formatted tables
+  --output-schema             Print TypeScript type for --json output and exit (no API call)
   -V, --version               Show version number
   -h, --help                  Show help for any command`;
 

@@ -8,6 +8,7 @@ import { registerRobotCommands } from './robot/commands/index.js';
 import { registerCloudCommands } from './cloud/commands/index.js';
 import { registerAuctionCommands } from './auction/commands.js';
 import { generateReference, type ReferenceSection } from './shared/reference.js';
+import { outputSchemas } from './shared/schemas.js';
 
 const require = createRequire(import.meta.url);
 const { version } = require('../package.json') as { version: string };
@@ -30,7 +31,8 @@ program
   .version(version)
   .option('-u, --user <username>', 'Hetzner Robot web service username (or set HETZNER_ROBOT_USER)')
   .option('-p, --password <password>', 'Hetzner Robot web service password (or set HETZNER_ROBOT_PASSWORD; use "-" to read from stdin)')
-  .option('--json', 'Output raw JSON instead of formatted tables');
+  .option('--json', 'Output raw JSON instead of formatted tables')
+  .option('--output-schema', 'Print TypeScript type for --json output and exit (no API call)');
 
 // Register all robot commands directly on program (backward compat)
 registerRobotCommands(program);
@@ -53,5 +55,25 @@ program
   .action((options: { section?: ReferenceSection }) => {
     console.log(generateReference(options.section));
   });
+
+program.hook('preAction', (thisCommand, actionCommand) => {
+  if (thisCommand.opts().outputSchema) {
+    const parts: string[] = [];
+    let cmd: Command | null = actionCommand;
+    while (cmd && cmd !== program) {
+      parts.unshift(cmd.name());
+      cmd = cmd.parent;
+    }
+    const path = parts.join(' ');
+    const schema = outputSchemas[path];
+    if (schema) {
+      console.log(schema);
+    } else {
+      console.error(`No output schema for: hetzner ${path}`);
+      process.exit(1);
+    }
+    process.exit(0);
+  }
+});
 
 program.parse();
