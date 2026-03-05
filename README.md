@@ -7,6 +7,8 @@
 [![npm version](https://badge.fury.io/js/hetzner-cli.svg)](https://www.npmjs.com/package/hetzner-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+**[Website](https://ytspar.github.io/hetzner-cli/)** · **[npm](https://www.npmjs.com/package/hetzner-cli)** · **[GitHub](https://github.com/ytspar/hetzner-cli)**
+
 Unified CLI and Node.js library for Hetzner's three APIs:
 
 - **[Robot API](https://robot.hetzner.com)** — dedicated server management (servers, IPs, firewall, storage boxes, etc.)
