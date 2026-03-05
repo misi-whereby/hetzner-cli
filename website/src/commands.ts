@@ -1,40 +1,46 @@
-import { formatTable, formatDetail, formatJson, formatError, formatInfo } from "./formatter.ts";
 import {
-  getAuctionServers,
-  getAuctionServerById,
   type AuctionServer,
+  getAuctionServerById,
+  getAuctionServers,
 } from "./data/auction.ts";
 import {
-  getCloudServers,
-  getCloudServerByNameOrId,
-  getCloudNetworks,
-  getCloudNetworkById,
-  getCloudFirewalls,
   getCloudFirewallById,
-  getCloudVolumes,
+  getCloudFirewalls,
+  getCloudNetworkById,
+  getCloudNetworks,
+  getCloudServerByNameOrId,
+  getCloudServers,
   getCloudVolumeById,
+  getCloudVolumes,
 } from "./data/cloud.ts";
 import {
-  getRobotServers,
   getRobotServerById,
+  getRobotServers,
   getSshKeys,
 } from "./data/robot.ts";
 import {
-  getMainHelp,
+  formatDetail,
+  formatError,
+  formatInfo,
+  formatJson,
+  formatTable,
+} from "./formatter.ts";
+import {
   getAuctionHelp,
   getAuctionListHelp,
-  getCloudHelp,
-  getCloudServerHelp,
-  getCloudNetworkHelp,
   getCloudFirewallHelp,
+  getCloudHelp,
+  getCloudNetworkHelp,
+  getCloudServerHelp,
   getCloudVolumeHelp,
-  getServerHelp,
   getKeyHelp,
+  getMainHelp,
+  getServerHelp,
 } from "./help.ts";
 
 interface ParsedArgs {
-  positional: string[];
   flags: Record<string, string | boolean>;
+  positional: string[];
 }
 
 function parseArgs(input: string): ParsedArgs {
@@ -63,61 +69,56 @@ function parseArgs(input: string): ParsedArgs {
 }
 
 function relativeTime(timestamp: number): string {
-  if (timestamp === 0) return "—";
+  if (timestamp === 0) {
+    return "—";
+  }
   const now = Math.floor(Date.now() / 1000);
   const diff = timestamp - now;
-  if (diff <= 0) return "expired";
+  if (diff <= 0) {
+    return "expired";
+  }
   const hours = Math.floor(diff / 3600);
   const mins = Math.floor((diff % 3600) / 60);
-  if (hours > 0) return `${hours}h ${mins}m`;
+  if (hours > 0) {
+    return `${hours}h ${mins}m`;
+  }
   return `${mins}m`;
 }
 
 // ---- Auction Commands ----
 
-function auctionList(flags: Record<string, string | boolean>): string {
-  if (flags["help"]) return getAuctionListHelp();
-
-  let servers = getAuctionServers();
-
-  // Filters
-  if (flags["min-price"])
-    servers = servers.filter(
-      (s) => s.price >= Number(flags["min-price"])
-    );
-  if (flags["max-price"])
-    servers = servers.filter(
-      (s) => s.price <= Number(flags["max-price"])
-    );
-  if (flags["min-ram"])
-    servers = servers.filter(
-      (s) => s.ram_size >= Number(flags["min-ram"])
-    );
-  if (flags["max-ram"])
-    servers = servers.filter(
-      (s) => s.ram_size <= Number(flags["max-ram"])
-    );
-  if (flags["cpu"]) {
-    const cpu = String(flags["cpu"]).toLowerCase();
-    servers = servers.filter((s) =>
-      s.cpu.toLowerCase().includes(cpu)
-    );
+function applyAuctionFilters(
+  servers: AuctionServer[],
+  flags: Record<string, string | boolean>
+): AuctionServer[] {
+  let result = servers;
+  if (flags["min-price"]) {
+    result = result.filter((s) => s.price >= Number(flags["min-price"]));
   }
-  if (flags["datacenter"]) {
-    const dc = String(flags["datacenter"]).toLowerCase();
-    servers = servers.filter((s) =>
-      s.datacenter.toLowerCase().includes(dc)
-    );
+  if (flags["max-price"]) {
+    result = result.filter((s) => s.price <= Number(flags["max-price"]));
+  }
+  if (flags["min-ram"]) {
+    result = result.filter((s) => s.ram_size >= Number(flags["min-ram"]));
+  }
+  if (flags["max-ram"]) {
+    result = result.filter((s) => s.ram_size <= Number(flags["max-ram"]));
+  }
+  if (flags.cpu) {
+    const cpu = String(flags.cpu).toLowerCase();
+    result = result.filter((s) => s.cpu.toLowerCase().includes(cpu));
+  }
+  if (flags.datacenter) {
+    const dc = String(flags.datacenter).toLowerCase();
+    result = result.filter((s) => s.datacenter.toLowerCase().includes(dc));
   }
   if (flags["disk-type"]) {
     const dt = String(flags["disk-type"]).toLowerCase();
-    servers = servers.filter((s) =>
-      s.disk_type.toLowerCase().includes(dt)
-    );
+    result = result.filter((s) => s.disk_type.toLowerCase().includes(dt));
   }
-  if (flags["search"]) {
-    const search = String(flags["search"]).toLowerCase();
-    servers = servers.filter(
+  if (flags.search) {
+    const search = String(flags.search).toLowerCase();
+    result = result.filter(
       (s) =>
         s.cpu.toLowerCase().includes(search) ||
         s.datacenter.toLowerCase().includes(search) ||
@@ -127,31 +128,53 @@ function auctionList(flags: Record<string, string | boolean>): string {
         s.name.toLowerCase().includes(search)
     );
   }
-  if (flags["ecc"]) servers = servers.filter((s) => s.ecc);
-  if (flags["gpu"]) servers = servers.filter((s) => s.gpu);
-  if (flags["inic"]) servers = servers.filter((s) => s.inic);
-  if (flags["fixed-price"])
-    servers = servers.filter((s) => s.fixed_price);
-  if (flags["auction-only"])
-    servers = servers.filter((s) => !s.fixed_price);
-  if (flags["no-setup-fee"])
-    servers = servers.filter((s) => s.setup_price === 0);
+  if (flags.ecc) {
+    result = result.filter((s) => s.ecc);
+  }
+  if (flags.gpu) {
+    result = result.filter((s) => s.gpu);
+  }
+  if (flags.inic) {
+    result = result.filter((s) => s.inic);
+  }
+  if (flags["fixed-price"]) {
+    result = result.filter((s) => s.fixed_price);
+  }
+  if (flags["auction-only"]) {
+    result = result.filter((s) => !s.fixed_price);
+  }
+  if (flags["no-setup-fee"]) {
+    result = result.filter((s) => s.setup_price === 0);
+  }
+  return result;
+}
+
+function auctionList(flags: Record<string, string | boolean>): string {
+  if (flags.help) {
+    return getAuctionListHelp();
+  }
+
+  let servers = applyAuctionFilters(getAuctionServers(), flags);
 
   // Sort
-  if (flags["sort"]) {
-    const field = String(flags["sort"]).toLowerCase();
+  if (flags.sort) {
+    const field = String(flags.sort).toLowerCase();
     const sortFn = getSortFn(field);
-    if (sortFn) servers = [...servers].sort(sortFn);
-    if (flags["desc"]) servers = servers.reverse();
+    if (sortFn) {
+      servers = [...servers].sort(sortFn);
+    }
+    if (flags.desc) {
+      servers = servers.reverse();
+    }
   }
 
   // Limit
-  if (flags["limit"]) {
-    servers = servers.slice(0, Number(flags["limit"]));
+  if (flags.limit) {
+    servers = servers.slice(0, Number(flags.limit));
   }
 
   // JSON output
-  if (flags["json"]) {
+  if (flags.json) {
     return formatJson(servers);
   }
 
@@ -188,7 +211,9 @@ function auctionList(flags: Record<string, string | boolean>): string {
   );
 }
 
-function getSortFn(field: string): ((a: AuctionServer, b: AuctionServer) => number) | null {
+function getSortFn(
+  field: string
+): ((a: AuctionServer, b: AuctionServer) => number) | null {
   switch (field) {
     case "price":
       return (a, b) => a.price - b.price;
@@ -209,16 +234,22 @@ function getSortFn(field: string): ((a: AuctionServer, b: AuctionServer) => numb
 }
 
 function truncate(s: string, maxLen: number): string {
-  if (s.length <= maxLen) return s;
-  return s.slice(0, maxLen - 1) + "…";
+  if (s.length <= maxLen) {
+    return s;
+  }
+  return `${s.slice(0, maxLen - 1)}…`;
 }
 
 function auctionShow(idStr: string): string {
-  const id = parseInt(idStr, 10);
-  if (isNaN(id)) return formatError("Please provide a valid server ID.");
+  const id = Number.parseInt(idStr, 10);
+  if (Number.isNaN(id)) {
+    return formatError("Please provide a valid server ID.");
+  }
 
   const s = getAuctionServerById(id);
-  if (!s) return formatError(`Server with ID ${id} not found.`);
+  if (!s) {
+    return formatError(`Server with ID ${id} not found.`);
+  }
 
   return formatDetail(`Auction Server #${s.id}`, [
     ["ID", String(s.id)],
@@ -232,9 +263,16 @@ function auctionShow(idStr: string): string {
     ["Disk Type", s.disk_type],
     ["Datacenter", s.datacenter],
     ["Price", `€${s.price}/month`, "c-green"],
-    ["Setup Fee", s.setup_price > 0 ? `€${s.setup_price}` : "None", s.setup_price > 0 ? "c-yellow" : "c-green"],
+    [
+      "Setup Fee",
+      s.setup_price > 0 ? `€${s.setup_price}` : "None",
+      s.setup_price > 0 ? "c-yellow" : "c-green",
+    ],
     ["Type", s.fixed_price ? "Fixed Price" : "Auction"],
-    ["Next Reduce", s.fixed_price ? "—" : relativeTime(s.next_reduce_timestamp)],
+    [
+      "Next Reduce",
+      s.fixed_price ? "—" : relativeTime(s.next_reduce_timestamp),
+    ],
     ["ECC", s.ecc ? "Yes" : "No", s.ecc ? "c-green" : "c-dim"],
     ["GPU", s.gpu ? "Yes" : "No", s.gpu ? "c-green" : "c-dim"],
     ["iNIC", s.inic ? "Yes" : "No", s.inic ? "c-green" : "c-dim"],
@@ -275,7 +313,9 @@ function cloudServerList(): string {
 
 function cloudServerDescribe(nameOrId: string): string {
   const s = getCloudServerByNameOrId(nameOrId);
-  if (!s) return formatError(`Server "${nameOrId}" not found.`);
+  if (!s) {
+    return formatError(`Server "${nameOrId}" not found.`);
+  }
 
   const labels = Object.entries(s.labels)
     .map(([k, v]) => `${k}=${v}`)
@@ -321,10 +361,14 @@ function cloudNetworkList(): string {
 }
 
 function cloudNetworkDescribe(idStr: string): string {
-  const id = parseInt(idStr, 10);
-  if (isNaN(id)) return formatError("Please provide a valid network ID.");
+  const id = Number.parseInt(idStr, 10);
+  if (Number.isNaN(id)) {
+    return formatError("Please provide a valid network ID.");
+  }
   const n = getCloudNetworkById(id);
-  if (!n) return formatError(`Network ${id} not found.`);
+  if (!n) {
+    return formatError(`Network ${id} not found.`);
+  }
 
   const labels = Object.entries(n.labels)
     .map(([k, v]) => `${k}=${v}`)
@@ -366,17 +410,19 @@ function cloudFirewallList(): string {
 }
 
 function cloudFirewallDescribe(idStr: string): string {
-  const id = parseInt(idStr, 10);
-  if (isNaN(id)) return formatError("Please provide a valid firewall ID.");
+  const id = Number.parseInt(idStr, 10);
+  if (Number.isNaN(id)) {
+    return formatError("Please provide a valid firewall ID.");
+  }
   const f = getCloudFirewallById(id);
-  if (!f) return formatError(`Firewall ${id} not found.`);
+  if (!f) {
+    return formatError(`Firewall ${id} not found.`);
+  }
 
   const labels = Object.entries(f.labels)
     .map(([k, v]) => `${k}=${v}`)
     .join(", ");
-  const appliedTo = f.applied_to
-    .map((a) => `server:${a.server.id}`)
-    .join(", ");
+  const appliedTo = f.applied_to.map((a) => `server:${a.server.id}`).join(", ");
 
   const props: [string, string, string?][] = [
     ["ID", String(f.id)],
@@ -427,10 +473,14 @@ function cloudVolumeList(): string {
 }
 
 function cloudVolumeDescribe(idStr: string): string {
-  const id = parseInt(idStr, 10);
-  if (isNaN(id)) return formatError("Please provide a valid volume ID.");
+  const id = Number.parseInt(idStr, 10);
+  if (Number.isNaN(id)) {
+    return formatError("Please provide a valid volume ID.");
+  }
   const v = getCloudVolumeById(id);
-  if (!v) return formatError(`Volume ${id} not found.`);
+  if (!v) {
+    return formatError(`Volume ${id} not found.`);
+  }
 
   const labels = Object.entries(v.labels)
     .map(([k, v]) => `${k}=${v}`)
@@ -480,10 +530,14 @@ function robotServerList(): string {
 }
 
 function robotServerGet(idStr: string): string {
-  const id = parseInt(idStr, 10);
-  if (isNaN(id)) return formatError("Please provide a valid server number.");
+  const id = Number.parseInt(idStr, 10);
+  if (Number.isNaN(id)) {
+    return formatError("Please provide a valid server number.");
+  }
   const s = getRobotServerById(id);
-  if (!s) return formatError(`Server ${id} not found.`);
+  if (!s) {
+    return formatError(`Server ${id} not found.`);
+  }
 
   return formatDetail(`Dedicated Server #${s.server_number}`, [
     ["Server Number", String(s.server_number)],
@@ -494,7 +548,11 @@ function robotServerGet(idStr: string): string {
     ["IPv4", s.server_ip],
     ["IPv6", s.server_ipv6_net],
     ["Traffic", s.traffic],
-    ["Cancelled", s.cancelled ? "Yes" : "No", s.cancelled ? "c-red" : "c-green"],
+    [
+      "Cancelled",
+      s.cancelled ? "Yes" : "No",
+      s.cancelled ? "c-red" : "c-green",
+    ],
     ["Paid Until", s.paid_until],
   ]);
 }
@@ -522,14 +580,168 @@ function robotKeyList(): string {
 
 // ---- Command Dispatcher ----
 
+function dispatchCloudResource(
+  resource: string,
+  action: string | undefined,
+  positional: string[],
+  flags: Record<string, string | boolean>
+): string {
+  if (resource === "server") {
+    return dispatchCloudAction(action, positional[3], flags, {
+      help: getCloudServerHelp,
+      list: cloudServerList,
+      describe: cloudServerDescribe,
+      errorPrefix: "cloud server",
+      describeUsage: "Usage: cloud server describe <name|id>",
+    });
+  }
+  if (resource === "network") {
+    return dispatchCloudAction(action, positional[3], flags, {
+      help: getCloudNetworkHelp,
+      list: cloudNetworkList,
+      describe: cloudNetworkDescribe,
+      errorPrefix: "cloud network",
+      describeUsage: "Usage: cloud network describe <id>",
+    });
+  }
+  if (resource === "firewall") {
+    return dispatchCloudAction(action, positional[3], flags, {
+      help: getCloudFirewallHelp,
+      list: cloudFirewallList,
+      describe: cloudFirewallDescribe,
+      errorPrefix: "cloud firewall",
+      describeUsage: "Usage: cloud firewall describe <id>",
+    });
+  }
+  if (resource === "volume") {
+    return dispatchCloudAction(action, positional[3], flags, {
+      help: getCloudVolumeHelp,
+      list: cloudVolumeList,
+      describe: cloudVolumeDescribe,
+      errorPrefix: "cloud volume",
+      describeUsage: "Usage: cloud volume describe <id>",
+    });
+  }
+  return formatError(
+    `Unknown cloud resource: ${resource}. Run "cloud --help" for usage.`
+  );
+}
+
+function dispatchCloudAction(
+  action: string | undefined,
+  identifier: string | undefined,
+  flags: Record<string, string | boolean>,
+  config: {
+    help: () => string;
+    list: () => string;
+    describe: (id: string) => string;
+    errorPrefix: string;
+    describeUsage: string;
+  }
+): string {
+  if (!action || flags.help === true) {
+    return config.help();
+  }
+  if (action === "list" || action === "ls") {
+    return config.list();
+  }
+  if (action === "describe" || action === "get" || action === "show") {
+    if (!identifier) {
+      return formatError(config.describeUsage);
+    }
+    return config.describe(identifier);
+  }
+  return formatError(
+    `Unknown action: ${action}. Run "${config.errorPrefix} --help" for usage.`
+  );
+}
+
+function dispatchAuction(
+  positional: string[],
+  flags: Record<string, string | boolean>
+): string {
+  if (
+    positional.length < 2 ||
+    (flags.help === true && positional.length === 1)
+  ) {
+    return getAuctionHelp();
+  }
+  const sub = positional[1];
+  if (sub === "list" || sub === "ls") {
+    return auctionList(flags);
+  }
+  if (sub === "show") {
+    if (!positional[2]) {
+      return formatError("Usage: auction show <id>");
+    }
+    return auctionShow(positional[2]);
+  }
+  return formatError(
+    `Unknown auction command: ${sub}. Run "auction --help" for usage.`
+  );
+}
+
+function dispatchCloud(
+  positional: string[],
+  flags: Record<string, string | boolean>
+): string {
+  if (
+    positional.length < 2 ||
+    (flags.help === true && positional.length === 1)
+  ) {
+    return getCloudHelp();
+  }
+  return dispatchCloudResource(positional[1], positional[2], positional, flags);
+}
+
+function dispatchServer(
+  positional: string[],
+  flags: Record<string, string | boolean>
+): string {
+  if (positional.length < 2 || flags.help === true) {
+    return getServerHelp();
+  }
+  const sub = positional[1];
+  if (sub === "list" || sub === "ls") {
+    return robotServerList();
+  }
+  if (sub === "get" || sub === "show") {
+    if (!positional[2]) {
+      return formatError("Usage: server get <id>");
+    }
+    return robotServerGet(positional[2]);
+  }
+  return formatError(`Unknown server command: ${sub}`);
+}
+
+function dispatchKey(
+  positional: string[],
+  flags: Record<string, string | boolean>
+): string {
+  if (positional.length < 2 || flags.help === true) {
+    return getKeyHelp();
+  }
+  const sub = positional[1];
+  if (sub === "list" || sub === "ls") {
+    return robotKeyList();
+  }
+  return formatError(`Unknown key command: ${sub}`);
+}
+
 export function executeCommand(input: string): string {
   const { positional, flags } = parseArgs(input);
 
-  if (positional.length === 0 || flags["help"] === true && positional.length === 0) {
+  if (
+    positional.length === 0 ||
+    (flags.help === true && positional.length === 0)
+  ) {
     return getMainHelp();
   }
 
-  if (flags["version"] || (positional.length === 1 && positional[0] === "version")) {
+  if (
+    flags.version ||
+    (positional.length === 1 && positional[0] === "version")
+  ) {
     return formatInfo("hetzner-cli v2.2.0");
   }
 
@@ -538,89 +750,16 @@ export function executeCommand(input: string): string {
   switch (cmd) {
     case "help":
       return getMainHelp();
-
     case "version":
       return formatInfo("hetzner-cli v2.2.0");
-
-    case "auction": {
-      if (positional.length < 2 || flags["help"] === true && positional.length === 1) {
-        return getAuctionHelp();
-      }
-      const sub = positional[1];
-      if (sub === "list" || sub === "ls") {
-        return auctionList(flags);
-      }
-      if (sub === "show") {
-        if (!positional[2]) return formatError("Usage: auction show <id>");
-        return auctionShow(positional[2]);
-      }
-      return formatError(`Unknown auction command: ${sub}. Run "auction --help" for usage.`);
-    }
-
-    case "cloud": {
-      if (positional.length < 2 || (flags["help"] === true && positional.length === 1)) {
-        return getCloudHelp();
-      }
-      const resource = positional[1];
-      const action = positional[2];
-
-      if (resource === "server") {
-        if (!action || flags["help"] === true) return getCloudServerHelp();
-        if (action === "list" || action === "ls") return cloudServerList();
-        if (action === "describe" || action === "get" || action === "show") {
-          if (!positional[3]) return formatError("Usage: cloud server describe <name|id>");
-          return cloudServerDescribe(positional[3]);
-        }
-        return formatError(`Unknown action: ${action}. Run "cloud server --help" for usage.`);
-      }
-      if (resource === "network") {
-        if (!action || flags["help"] === true) return getCloudNetworkHelp();
-        if (action === "list" || action === "ls") return cloudNetworkList();
-        if (action === "describe" || action === "get" || action === "show") {
-          if (!positional[3]) return formatError("Usage: cloud network describe <id>");
-          return cloudNetworkDescribe(positional[3]);
-        }
-        return formatError(`Unknown action: ${action}`);
-      }
-      if (resource === "firewall") {
-        if (!action || flags["help"] === true) return getCloudFirewallHelp();
-        if (action === "list" || action === "ls") return cloudFirewallList();
-        if (action === "describe" || action === "get" || action === "show") {
-          if (!positional[3]) return formatError("Usage: cloud firewall describe <id>");
-          return cloudFirewallDescribe(positional[3]);
-        }
-        return formatError(`Unknown action: ${action}`);
-      }
-      if (resource === "volume") {
-        if (!action || flags["help"] === true) return getCloudVolumeHelp();
-        if (action === "list" || action === "ls") return cloudVolumeList();
-        if (action === "describe" || action === "get" || action === "show") {
-          if (!positional[3]) return formatError("Usage: cloud volume describe <id>");
-          return cloudVolumeDescribe(positional[3]);
-        }
-        return formatError(`Unknown action: ${action}`);
-      }
-      return formatError(`Unknown cloud resource: ${resource}. Run "cloud --help" for usage.`);
-    }
-
-    case "server": {
-      if (positional.length < 2 || flags["help"] === true) return getServerHelp();
-      const sub = positional[1];
-      if (sub === "list" || sub === "ls") return robotServerList();
-      if (sub === "get" || sub === "show") {
-        if (!positional[2]) return formatError("Usage: server get <id>");
-        return robotServerGet(positional[2]);
-      }
-      return formatError(`Unknown server command: ${sub}`);
-    }
-
-    case "key": {
-      if (positional.length < 2 || flags["help"] === true) return getKeyHelp();
-      const sub = positional[1];
-      if (sub === "list" || sub === "ls") return robotKeyList();
-      return formatError(`Unknown key command: ${sub}`);
-    }
-
+    case "auction":
+      return dispatchAuction(positional, flags);
+    case "cloud":
+      return dispatchCloud(positional, flags);
+    case "server":
+      return dispatchServer(positional, flags);
+    case "key":
+      return dispatchKey(positional, flags);
     default:
       return formatError(
         `Unknown command: "${cmd}". Run "help" for available commands.`

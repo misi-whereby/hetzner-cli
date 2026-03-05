@@ -1,33 +1,34 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock modules before imports
-vi.mock('node:fs', () => ({
+vi.mock("node:fs", () => ({
   existsSync: vi.fn(),
   readFileSync: vi.fn(),
   writeFileSync: vi.fn(),
   mkdirSync: vi.fn(),
 }));
 
-vi.mock('node:os', () => ({
-  homedir: vi.fn(() => '/home/testuser'),
+vi.mock("node:os", () => ({
+  homedir: vi.fn(() => "/home/testuser"),
 }));
 
-vi.mock('keytar', () => ({
+vi.mock("keytar", () => ({
   getPassword: vi.fn(),
   setPassword: vi.fn(),
   deletePassword: vi.fn(),
 }));
 
+// biome-ignore lint/performance/noNamespaceImport: needed for vi.mocked() on namespace
+import * as keytar from "keytar";
 import {
   createContext,
-  useContext,
   deleteContext,
-  listContexts,
   getActiveContext,
+  listContexts,
   resolveToken,
-} from './context.js';
-import * as keytar from 'keytar';
+  useContext,
+} from "./context.js";
 
 const mockExistsSync = vi.mocked(existsSync);
 const mockReadFileSync = vi.mocked(readFileSync);
@@ -37,12 +38,15 @@ const mockKeytarSetPassword = vi.mocked(keytar.setPassword);
 const mockKeytarGetPassword = vi.mocked(keytar.getPassword);
 const mockKeytarDeletePassword = vi.mocked(keytar.deletePassword);
 
-const CONFIG_DIR = '/home/testuser/.hetzner-cli';
-const CONTEXTS_FILE = '/home/testuser/.hetzner-cli/cloud-contexts.json';
+const CONFIG_DIR = "/home/testuser/.hetzner-cli";
+const CONTEXTS_FILE = "/home/testuser/.hetzner-cli/cloud-contexts.json";
 
-function mockLoadContexts(data: { active: string | null; contexts: Record<string, { name: string; token?: string }> }) {
-  mockExistsSync.mockImplementation((p) =>
-    String(p) === CONTEXTS_FILE || String(p) === CONFIG_DIR
+function mockLoadContexts(data: {
+  active: string | null;
+  contexts: Record<string, { name: string; token?: string }>;
+}) {
+  mockExistsSync.mockImplementation(
+    (p) => String(p) === CONTEXTS_FILE || String(p) === CONFIG_DIR
   );
   mockReadFileSync.mockReturnValue(JSON.stringify(data));
 }
@@ -51,276 +55,291 @@ function mockEmptyContexts() {
   mockExistsSync.mockReturnValue(false);
 }
 
-describe('Cloud Context', () => {
+describe("Cloud Context", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // biome-ignore lint/performance/noDelete: delete is required for process.env to actually remove the key
     delete process.env.HETZNER_CLOUD_TOKEN;
   });
 
-  describe('createContext', () => {
-    it('should store token in keytar and save config', async () => {
+  describe("createContext", () => {
+    it("should store token in keytar and save config", async () => {
       mockEmptyContexts();
       mockKeytarSetPassword.mockResolvedValue(undefined);
 
-      await createContext('prod', 'my-token');
+      await createContext("prod", "my-token");
 
-      expect(mockKeytarSetPassword).toHaveBeenCalledWith('hetzner-cli', 'cloud-token:prod', 'my-token');
+      expect(mockKeytarSetPassword).toHaveBeenCalledWith(
+        "hetzner-cli",
+        "cloud-token:prod",
+        "my-token"
+      );
       expect(mockWriteFileSync).toHaveBeenCalled();
       const written = JSON.parse(mockWriteFileSync.mock.calls[0][1] as string);
-      expect(written.contexts.prod.name).toBe('prod');
+      expect(written.contexts.prod.name).toBe("prod");
       expect(written.contexts.prod.token).toBeUndefined();
     });
 
-    it('should fall back to file storage when keytar fails', async () => {
+    it("should fall back to file storage when keytar fails", async () => {
       mockEmptyContexts();
-      mockKeytarSetPassword.mockRejectedValue(new Error('keytar error'));
+      mockKeytarSetPassword.mockRejectedValue(new Error("keytar error"));
 
-      await createContext('prod', 'my-token');
+      await createContext("prod", "my-token");
 
       const written = JSON.parse(mockWriteFileSync.mock.calls[0][1] as string);
-      expect(written.contexts.prod.token).toBe('my-token');
+      expect(written.contexts.prod.token).toBe("my-token");
     });
 
-    it('should auto-activate the first context', async () => {
+    it("should auto-activate the first context", async () => {
       mockEmptyContexts();
       mockKeytarSetPassword.mockResolvedValue(undefined);
 
-      await createContext('first', 'tok');
+      await createContext("first", "tok");
 
       const written = JSON.parse(mockWriteFileSync.mock.calls[0][1] as string);
-      expect(written.active).toBe('first');
+      expect(written.active).toBe("first");
     });
 
-    it('should not change active when adding subsequent contexts', async () => {
+    it("should not change active when adding subsequent contexts", async () => {
       mockLoadContexts({
-        active: 'existing',
-        contexts: { existing: { name: 'existing' } },
+        active: "existing",
+        contexts: { existing: { name: "existing" } },
       });
       mockKeytarSetPassword.mockResolvedValue(undefined);
 
-      await createContext('second', 'tok');
+      await createContext("second", "tok");
 
       const written = JSON.parse(mockWriteFileSync.mock.calls[0][1] as string);
-      expect(written.active).toBe('existing');
+      expect(written.active).toBe("existing");
     });
 
-    it('should create config dir if it does not exist', async () => {
+    it("should create config dir if it does not exist", async () => {
       mockExistsSync.mockReturnValue(false);
       mockKeytarSetPassword.mockResolvedValue(undefined);
 
-      await createContext('test', 'tok');
+      await createContext("test", "tok");
 
-      expect(mockMkdirSync).toHaveBeenCalledWith(CONFIG_DIR, { recursive: true, mode: 0o700 });
+      expect(mockMkdirSync).toHaveBeenCalledWith(CONFIG_DIR, {
+        recursive: true,
+        mode: 0o700,
+      });
     });
   });
 
-  describe('useContext', () => {
-    it('should set the active context', () => {
+  describe("useContext", () => {
+    it("should set the active context", () => {
       mockLoadContexts({
-        active: 'old',
-        contexts: { old: { name: 'old' }, target: { name: 'target' } },
+        active: "old",
+        contexts: { old: { name: "old" }, target: { name: "target" } },
       });
 
-      useContext('target');
+      useContext("target");
 
       const written = JSON.parse(mockWriteFileSync.mock.calls[0][1] as string);
-      expect(written.active).toBe('target');
+      expect(written.active).toBe("target");
     });
 
-    it('should throw for non-existent context', () => {
+    it("should throw for non-existent context", () => {
       mockLoadContexts({
         active: null,
         contexts: {},
       });
 
-      expect(() => useContext('nonexistent')).toThrow("Context 'nonexistent' not found");
+      expect(() => useContext("nonexistent")).toThrow(
+        "Context 'nonexistent' not found"
+      );
     });
   });
 
-  describe('deleteContext', () => {
-    it('should remove context and delete keytar entry', async () => {
+  describe("deleteContext", () => {
+    it("should remove context and delete keytar entry", async () => {
       mockLoadContexts({
-        active: 'other',
-        contexts: { prod: { name: 'prod' }, other: { name: 'other' } },
+        active: "other",
+        contexts: { prod: { name: "prod" }, other: { name: "other" } },
       });
       mockKeytarDeletePassword.mockResolvedValue(true);
 
-      await deleteContext('prod');
+      await deleteContext("prod");
 
-      expect(mockKeytarDeletePassword).toHaveBeenCalledWith('hetzner-cli', 'cloud-token:prod');
+      expect(mockKeytarDeletePassword).toHaveBeenCalledWith(
+        "hetzner-cli",
+        "cloud-token:prod"
+      );
       const written = JSON.parse(mockWriteFileSync.mock.calls[0][1] as string);
       expect(written.contexts.prod).toBeUndefined();
       expect(written.contexts.other).toBeDefined();
     });
 
-    it('should auto-switch active when deleting active context', async () => {
+    it("should auto-switch active when deleting active context", async () => {
       mockLoadContexts({
-        active: 'prod',
-        contexts: { prod: { name: 'prod' }, staging: { name: 'staging' } },
+        active: "prod",
+        contexts: { prod: { name: "prod" }, staging: { name: "staging" } },
       });
       mockKeytarDeletePassword.mockResolvedValue(true);
 
-      await deleteContext('prod');
+      await deleteContext("prod");
 
       const written = JSON.parse(mockWriteFileSync.mock.calls[0][1] as string);
-      expect(written.active).toBe('staging');
+      expect(written.active).toBe("staging");
     });
 
-    it('should set active to null when deleting the last context', async () => {
+    it("should set active to null when deleting the last context", async () => {
       mockLoadContexts({
-        active: 'only',
-        contexts: { only: { name: 'only' } },
+        active: "only",
+        contexts: { only: { name: "only" } },
       });
       mockKeytarDeletePassword.mockResolvedValue(true);
 
-      await deleteContext('only');
+      await deleteContext("only");
 
       const written = JSON.parse(mockWriteFileSync.mock.calls[0][1] as string);
       expect(written.active).toBeNull();
       expect(Object.keys(written.contexts)).toHaveLength(0);
     });
 
-    it('should throw for non-existent context', async () => {
+    it("should throw for non-existent context", async () => {
       mockLoadContexts({
         active: null,
         contexts: {},
       });
 
-      await expect(deleteContext('ghost')).rejects.toThrow("Context 'ghost' not found");
+      await expect(deleteContext("ghost")).rejects.toThrow(
+        "Context 'ghost' not found"
+      );
     });
 
-    it('should handle keytar deletion failure gracefully', async () => {
+    it("should handle keytar deletion failure gracefully", async () => {
       mockLoadContexts({
         active: null,
-        contexts: { ctx: { name: 'ctx' } },
+        contexts: { ctx: { name: "ctx" } },
       });
-      mockKeytarDeletePassword.mockRejectedValue(new Error('keytar fail'));
+      mockKeytarDeletePassword.mockRejectedValue(new Error("keytar fail"));
 
-      await deleteContext('ctx');
+      await deleteContext("ctx");
 
       const written = JSON.parse(mockWriteFileSync.mock.calls[0][1] as string);
       expect(written.contexts.ctx).toBeUndefined();
     });
   });
 
-  describe('listContexts', () => {
-    it('should return empty list when no contexts', () => {
+  describe("listContexts", () => {
+    it("should return empty list when no contexts", () => {
       mockEmptyContexts();
 
       const result = listContexts();
       expect(result).toEqual([]);
     });
 
-    it('should return contexts with active flag', () => {
+    it("should return contexts with active flag", () => {
       mockLoadContexts({
-        active: 'prod',
+        active: "prod",
         contexts: {
-          prod: { name: 'prod' },
-          staging: { name: 'staging' },
+          prod: { name: "prod" },
+          staging: { name: "staging" },
         },
       });
 
       const result = listContexts();
       expect(result).toEqual([
-        { name: 'prod', active: true },
-        { name: 'staging', active: false },
+        { name: "prod", active: true },
+        { name: "staging", active: false },
       ]);
     });
   });
 
-  describe('getActiveContext', () => {
-    it('should return null when no contexts', () => {
+  describe("getActiveContext", () => {
+    it("should return null when no contexts", () => {
       mockEmptyContexts();
 
       expect(getActiveContext()).toBeNull();
     });
 
-    it('should return active context name', () => {
+    it("should return active context name", () => {
       mockLoadContexts({
-        active: 'prod',
-        contexts: { prod: { name: 'prod' } },
+        active: "prod",
+        contexts: { prod: { name: "prod" } },
       });
 
-      expect(getActiveContext()).toBe('prod');
+      expect(getActiveContext()).toBe("prod");
     });
   });
 
-  describe('loadContexts error handling', () => {
-    it('should return default config when JSON parse fails', () => {
-      mockExistsSync.mockImplementation((p) =>
-        String(p) === CONTEXTS_FILE || String(p) === CONFIG_DIR
+  describe("loadContexts error handling", () => {
+    it("should return default config when JSON parse fails", () => {
+      mockExistsSync.mockImplementation(
+        (p) => String(p) === CONTEXTS_FILE || String(p) === CONFIG_DIR
       );
-      mockReadFileSync.mockReturnValue('not valid json {{{');
+      mockReadFileSync.mockReturnValue("not valid json {{{");
 
       const result = listContexts();
       expect(result).toEqual([]);
     });
   });
 
-  describe('resolveToken', () => {
-    it('should prefer flag token over everything', async () => {
-      process.env.HETZNER_CLOUD_TOKEN = 'env-token';
+  describe("resolveToken", () => {
+    it("should prefer flag token over everything", async () => {
+      process.env.HETZNER_CLOUD_TOKEN = "env-token";
       mockLoadContexts({
-        active: 'ctx',
-        contexts: { ctx: { name: 'ctx', token: 'file-token' } },
+        active: "ctx",
+        contexts: { ctx: { name: "ctx", token: "file-token" } },
       });
 
-      const result = await resolveToken('flag-token');
-      expect(result).toBe('flag-token');
+      const result = await resolveToken("flag-token");
+      expect(result).toBe("flag-token");
     });
 
-    it('should use env variable when no flag', async () => {
-      process.env.HETZNER_CLOUD_TOKEN = 'env-token';
+    it("should use env variable when no flag", async () => {
+      process.env.HETZNER_CLOUD_TOKEN = "env-token";
 
       const result = await resolveToken();
-      expect(result).toBe('env-token');
+      expect(result).toBe("env-token");
     });
 
-    it('should use context token from keytar when no flag or env', async () => {
+    it("should use context token from keytar when no flag or env", async () => {
       mockLoadContexts({
-        active: 'prod',
-        contexts: { prod: { name: 'prod' } },
+        active: "prod",
+        contexts: { prod: { name: "prod" } },
       });
-      mockKeytarGetPassword.mockResolvedValue('keytar-token');
+      mockKeytarGetPassword.mockResolvedValue("keytar-token");
 
       const result = await resolveToken();
-      expect(result).toBe('keytar-token');
+      expect(result).toBe("keytar-token");
     });
 
-    it('should fall back to file token when keytar returns null', async () => {
+    it("should fall back to file token when keytar returns null", async () => {
       mockLoadContexts({
-        active: 'prod',
-        contexts: { prod: { name: 'prod', token: 'file-token' } },
+        active: "prod",
+        contexts: { prod: { name: "prod", token: "file-token" } },
       });
       mockKeytarGetPassword.mockResolvedValue(null);
 
       const result = await resolveToken();
-      expect(result).toBe('file-token');
+      expect(result).toBe("file-token");
     });
 
-    it('should throw detailed error when no token is available', async () => {
+    it("should throw detailed error when no token is available", async () => {
       mockEmptyContexts();
 
-      await expect(resolveToken()).rejects.toThrow('No cloud token found');
+      await expect(resolveToken()).rejects.toThrow("No cloud token found");
     });
 
-    it('should throw when active context has no token', async () => {
+    it("should throw when active context has no token", async () => {
       mockLoadContexts({
-        active: 'prod',
-        contexts: { prod: { name: 'prod' } },
+        active: "prod",
+        contexts: { prod: { name: "prod" } },
       });
       mockKeytarGetPassword.mockResolvedValue(null);
 
-      await expect(resolveToken()).rejects.toThrow('No cloud token found');
+      await expect(resolveToken()).rejects.toThrow("No cloud token found");
     });
 
-    it('should throw when no active context is set', async () => {
+    it("should throw when no active context is set", async () => {
       mockLoadContexts({
         active: null,
-        contexts: { prod: { name: 'prod' } },
+        contexts: { prod: { name: "prod" } },
       });
 
-      await expect(resolveToken()).rejects.toThrow('No cloud token found');
+      await expect(resolveToken()).rejects.toThrow("No cloud token found");
     });
   });
 });

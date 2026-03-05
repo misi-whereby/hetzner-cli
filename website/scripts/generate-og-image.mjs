@@ -7,7 +7,7 @@
  * Usage:  node scripts/generate-og-image.mjs
  */
 import { readFileSync, writeFileSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Resvg } from "@resvg/resvg-js";
 
@@ -15,7 +15,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const websiteDir = join(__dirname, "..");
 
 const fontBuffer = readFileSync(
-  join(websiteDir, "public/fonts/DepartureMono-Regular.woff"),
+  join(websiteDir, "public/fonts/DepartureMono-Regular.woff")
 );
 
 // ── Image parameters ─────────────────────────────────────────────────────────

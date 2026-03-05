@@ -1,120 +1,120 @@
 // Re-export from new location for backward compatibility
 export type {
-  Server,
-  ServerSubnet,
-  ServerDetails,
-  Cancellation,
-  ResetType,
-  Reset,
+  ApiError,
+  ApiResponse,
   BootConfig,
-  RescueConfig,
-  LinuxConfig,
-  VncConfig,
-  WindowsConfig,
-  PleskConfig,
+  Cancellation,
   CpanelConfig,
-  IP,
-  Mac,
-  Subnet,
   Failover,
-  Rdns,
-  SshKey,
   Firewall,
   FirewallRule,
   FirewallTemplate,
-  VSwitch,
-  VSwitchServer,
-  VSwitchSubnet,
-  VSwitchCloudNetwork,
+  IP,
+  LinuxConfig,
+  Mac,
+  PleskConfig,
+  ProductPrice,
+  Rdns,
+  RescueConfig,
+  Reset,
+  ResetType,
+  Server,
+  ServerDetails,
+  ServerMarketProduct,
+  ServerProduct,
+  ServerSubnet,
+  ServerTransaction,
+  ServerTransactionProduct,
+  SshKey,
   StorageBox,
   StorageBoxSnapshot,
   StorageBoxSnapshotPlan,
   StorageBoxSubaccount,
+  Subnet,
   Traffic,
   TrafficData,
+  VncConfig,
+  VSwitch,
+  VSwitchCloudNetwork,
+  VSwitchServer,
+  VSwitchSubnet,
+  WindowsConfig,
   Wol,
-  ServerProduct,
-  ProductPrice,
-  ServerMarketProduct,
-  ServerTransaction,
-  ServerTransactionProduct,
-  ApiResponse,
-  ApiError,
-} from './robot/types.js';
+} from "./robot/types.js";
 
 // Auction Types (public API: https://www.hetzner.com/_resources/app/data/app/live_data_sb_EUR.json)
 
 export interface AuctionDiskData {
+  general: number[];
+  hdd: number[];
   nvme: number[];
   sata: number[];
-  hdd: number[];
-  general: number[];
 }
 
 export interface AuctionIpPrice {
-  Monthly: number;
-  Hourly: number;
   Amount: number;
+  Hourly: number;
+  Monthly: number;
 }
 
 export interface AuctionServer {
-  id: number;
-  key: number;
-  name: string;
-  description: string[];
-  information: string[] | null;
+  bandwidth: number;
+  cat_id?: number;
+  category?: string;
   cpu: string;
   cpu_count: number;
-  is_highio: boolean;
-  is_ecc: boolean;
-  traffic: string;
-  bandwidth: number;
-  ram: string[];
-  ram_size: number;
-  price: number;
-  setup_price: number;
-  hourly_price: number;
-  hdd_arr: string[];
-  hdd_hr: string[];
-  hdd_size: number;
-  hdd_count: number;
-  serverDiskData: AuctionDiskData;
   datacenter: string;
   datacenter_hr: string;
-  specials: string[];
+  description: string[];
   dist: string[];
   fixed_price: boolean;
+  hdd_arr: string[];
+  hdd_count: number;
+  hdd_hr: string[];
+  hdd_size: number;
+  hourly_price: number;
+  id: number;
+  information: string[] | null;
+  ip_price: AuctionIpPrice;
+  is_ecc: boolean;
+  is_highio: boolean;
+  key: number;
+  name: string;
   next_reduce: number;
   next_reduce_hr: boolean;
   next_reduce_timestamp: number;
-  ip_price: AuctionIpPrice;
-  category?: string;
-  cat_id?: number;
+  price: number;
+  ram: string[];
+  ram_size: number;
+  serverDiskData: AuctionDiskData;
+  setup_price: number;
+  specials: string[];
+  traffic: string;
 }
 
 export interface AuctionFilterOptions {
-  minPrice?: number;
-  maxPrice?: number;
-  maxHourlyPrice?: number;
-  minRam?: number;
-  maxRam?: number;
   cpu?: string;
   datacenter?: string;
-  minDiskSize?: number;
-  maxDiskSize?: number;
-  minDiskCount?: number;
-  maxDiskCount?: number;
-  diskType?: 'nvme' | 'sata' | 'hdd';
+  diskType?: "nvme" | "sata" | "hdd";
   ecc?: boolean;
-  gpu?: boolean;
-  inic?: boolean;
-  highio?: boolean;
-  specials?: string;
   fixedPrice?: boolean;
-  maxSetupPrice?: number;
-  minCpuCount?: number;
+  gpu?: boolean;
+  highio?: boolean;
+  inic?: boolean;
   maxCpuCount?: number;
+  maxDiskCount?: number;
+  maxDiskSize?: number;
+  maxHourlyPrice?: number;
+  maxPrice?: number;
+  maxRam?: number;
+  maxSetupPrice?: number;
   minBandwidth?: number;
+  minCpuCount?: number;
+  minDiskCount?: number;
+  minDiskSize?: number;
+  minPrice?: number;
+  minRam?: number;
+  specials?: string;
   text?: string;
 }
 

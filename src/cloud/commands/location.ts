@@ -1,29 +1,40 @@
-import type { Command } from 'commander';
-import { cloudAction, cloudOutput, resolveIdOrName, type CloudActionOptions } from '../helpers.js';
-import * as cloudFmt from '../formatter.js';
+import type { Command } from "commander";
+import { formatLocationDetails, formatLocationList } from "../formatter.js";
+import {
+  type CloudActionOptions,
+  cloudAction,
+  cloudOutput,
+  resolveIdOrName,
+} from "../helpers.js";
 
 export function registerLocationCommands(parent: Command): void {
-  const location = parent.command('location').description('Location information');
+  const location = parent
+    .command("location")
+    .description("Location information");
 
   location
-    .command('list')
-    .alias('ls')
-    .description('List all locations')
+    .command("list")
+    .alias("ls")
+    .description("List all locations")
     .action(
       cloudAction(async (client, options: CloudActionOptions) => {
         const locations = await client.listLocations();
-        cloudOutput(locations, cloudFmt.formatLocationList, options);
+        cloudOutput(locations, formatLocationList, options);
       })
     );
 
   location
-    .command('describe <id-or-name>')
-    .description('Show location details')
+    .command("describe <id-or-name>")
+    .description("Show location details")
     .action(
-      cloudAction(async (client, idOrName: string, options: CloudActionOptions) => {
-        const id = await resolveIdOrName(idOrName, 'location', (name) => client.listLocations({ name }));
-        const location = await client.getLocation(id);
-        cloudOutput(location, cloudFmt.formatLocationDetails, options);
-      })
+      cloudAction(
+        async (client, idOrName: string, options: CloudActionOptions) => {
+          const id = await resolveIdOrName(idOrName, "location", (name) =>
+            client.listLocations({ name })
+          );
+          const location = await client.getLocation(id);
+          cloudOutput(location, formatLocationDetails, options);
+        }
+      )
     );
 }

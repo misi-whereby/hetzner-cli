@@ -1,10 +1,10 @@
 import { escapeHtml } from "./terminal.ts";
 
 interface Column {
-  key: string;
-  label: string;
   align?: "left" | "right";
   color?: string;
+  key: string;
+  label: string;
 }
 
 export function formatTable(
@@ -23,7 +23,9 @@ export function formatTable(
   });
 
   const pad = (s: string, w: number, align: "left" | "right" = "left") => {
-    if (align === "right") return s.padStart(w);
+    if (align === "right") {
+      return s.padStart(w);
+    }
     return s.padEnd(w);
   };
 
@@ -94,7 +96,7 @@ export function formatDetail(
 
   const lines = [
     `<span class="c-cyan c-bold">${esc(title)}</span>`,
-    '<span class="c-dim">' + "─".repeat(60) + "</span>",
+    `<span class="c-dim">${"─".repeat(60)}</span>`,
   ];
 
   for (const [key, value, color] of properties) {
@@ -121,10 +123,7 @@ export function formatJson(data: unknown): string {
       ': <span class="json-string">&quot;$1&quot;</span>'
     )
     .replace(/:\s*(\d+\.?\d*)/g, ': <span class="json-number">$1</span>')
-    .replace(
-      /:\s*(true|false)/g,
-      ': <span class="json-bool">$1</span>'
-    )
+    .replace(/:\s*(true|false)/g, ': <span class="json-bool">$1</span>')
     .replace(/:\s*(null)/g, ': <span class="json-null">$1</span>');
 
   return `<pre class="json-output">${highlighted}</pre>`;

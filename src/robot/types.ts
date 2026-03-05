@@ -5,18 +5,18 @@
 
 // Server Types
 export interface Server {
+  cancelled: boolean;
+  dc: string;
+  ip: string[];
+  paid_until: string;
+  product: string;
   server_ip: string;
   server_ipv6_net: string;
-  server_number: number;
   server_name: string;
-  product: string;
-  dc: string;
-  traffic: string;
-  status: 'ready' | 'installing' | 'maintenance';
-  cancelled: boolean;
-  paid_until: string;
-  ip: string[];
+  server_number: number;
+  status: "ready" | "installing" | "maintenance";
   subnet: ServerSubnet[];
+  traffic: string;
 }
 
 export interface ServerSubnet {
@@ -25,75 +25,75 @@ export interface ServerSubnet {
 }
 
 export interface ServerDetails extends Server {
-  reset: boolean;
+  cpanel: boolean;
+  hot_swap: boolean;
+  plesk: boolean;
   rescue: boolean;
+  reset: boolean;
   vnc: boolean;
   windows: boolean;
-  plesk: boolean;
-  cpanel: boolean;
   wol: boolean;
-  hot_swap: boolean;
 }
 
 // Cancellation Types
 export interface Cancellation {
-  server_ip: string;
-  server_ipv6_net: string;
-  server_number: number;
-  server_name: string;
-  earliest_cancellation_date: string;
-  cancelled: boolean;
   cancellation_date: string | null;
   cancellation_reason: string[] | null;
+  cancelled: boolean;
+  earliest_cancellation_date: string;
+  server_ip: string;
+  server_ipv6_net: string;
+  server_name: string;
+  server_number: number;
 }
 
 // Reset Types
-export type ResetType = 'sw' | 'hw' | 'man' | 'power' | 'power_long';
+export type ResetType = "sw" | "hw" | "man" | "power" | "power_long";
 
 export interface Reset {
+  operating_status: string;
   server_ip: string;
   server_ipv6_net: string;
   server_number: number;
   type: ResetType[];
-  operating_status: string;
 }
 
 // Boot Types
 export interface BootConfig {
-  rescue: RescueConfig | null;
+  cpanel: CpanelConfig | null;
   linux: LinuxConfig | null;
+  plesk: PleskConfig | null;
+  rescue: RescueConfig | null;
   vnc: VncConfig | null;
   windows: WindowsConfig | null;
-  plesk: PleskConfig | null;
-  cpanel: CpanelConfig | null;
 }
 
 interface BaseBootConfig {
+  active: boolean;
+  password: string | null;
   server_ip: string;
   server_ipv6_net: string;
   server_number: number;
-  active: boolean;
-  password: string | null;
 }
 
 export interface RescueConfig extends BaseBootConfig {
-  os: string[];
   arch: number[];
   authorized_key: string[];
   host_key: string[];
+  os: string[];
 }
 
 export interface LinuxConfig extends BaseBootConfig {
-  dist: string[];
   arch: number[];
-  lang: string[];
   authorized_key: string[];
+  dist: string[];
   host_key: string[];
+  lang: string[];
 }
 
 export interface VncConfig extends BaseBootConfig {
-  dist: string[];
   arch: number[];
+  dist: string[];
   lang: string[];
 }
 
@@ -103,30 +103,30 @@ export interface WindowsConfig extends BaseBootConfig {
 }
 
 export interface PleskConfig extends BaseBootConfig {
-  dist: string[];
   arch: number[];
-  lang: string[];
+  dist: string[];
   hostname: string | null;
+  lang: string[];
 }
 
 export interface CpanelConfig extends BaseBootConfig {
-  dist: string[];
   arch: number[];
-  lang: string[];
+  dist: string[];
   hostname: string | null;
+  lang: string[];
 }
 
 // IP Types
 export interface IP {
   ip: string;
-  server_ip: string;
-  server_number: number;
   locked: boolean;
   separate_mac: string | null;
-  traffic_warnings: boolean;
-  traffic_hourly: number;
+  server_ip: string;
+  server_number: number;
   traffic_daily: number;
+  traffic_hourly: number;
   traffic_monthly: number;
+  traffic_warnings: boolean;
 }
 
 export interface Mac {
@@ -136,26 +136,26 @@ export interface Mac {
 
 // Subnet Types
 export interface Subnet {
-  ip: string;
-  mask: string;
+  failover: boolean;
   gateway: string;
+  ip: string;
+  locked: boolean;
+  mask: string;
   server_ip: string;
   server_number: number;
-  failover: boolean;
-  locked: boolean;
-  traffic_warnings: boolean;
-  traffic_hourly: number;
   traffic_daily: number;
+  traffic_hourly: number;
   traffic_monthly: number;
+  traffic_warnings: boolean;
 }
 
 // Failover Types
 export interface Failover {
+  active_server_ip: string;
   ip: string;
   netmask: string;
   server_ip: string;
   server_number: number;
-  active_server_ip: string;
 }
 
 // Reverse DNS Types
@@ -166,150 +166,150 @@ export interface Rdns {
 
 // SSH Key Types
 export interface SshKey {
-  name: string;
-  fingerprint: string;
-  type: string;
-  size: number;
   data: string;
+  fingerprint: string;
+  name: string;
+  size: number;
+  type: string;
 }
 
 // Firewall Types
 export interface Firewall {
-  server_ip: string;
-  server_number: number;
-  status: 'active' | 'disabled' | 'in process';
   filter_ipv6: boolean;
-  whitelist_hos: boolean;
-  port: 'main' | 'kvm';
+  port: "main" | "kvm";
   rules: {
     input: FirewallRule[];
     output?: FirewallRule[];
   };
+  server_ip: string;
+  server_number: number;
+  status: "active" | "disabled" | "in process";
+  whitelist_hos: boolean;
 }
 
 export interface FirewallRule {
-  ip_version: string;
-  name: string;
+  action: "accept" | "discard";
   dst_ip: string | null;
   dst_port: string | null;
+  ip_version: string;
+  name: string;
+  protocol: string | null;
   src_ip: string | null;
   src_port: string | null;
-  protocol: string | null;
   tcp_flags: string | null;
-  action: 'accept' | 'discard';
 }
 
 export interface FirewallTemplate {
-  id: number;
-  name: string;
   filter_ipv6: boolean;
-  whitelist_hos: boolean;
+  id: number;
   is_default: boolean;
+  name: string;
   rules: {
     input: FirewallRule[];
     output?: FirewallRule[];
   };
+  whitelist_hos: boolean;
 }
 
 // vSwitch Types
 export interface VSwitch {
+  cancelled: boolean;
+  cloud_network: VSwitchCloudNetwork[];
   id: number;
   name: string;
-  vlan: number;
-  cancelled: boolean;
   server: VSwitchServer[];
   subnet: VSwitchSubnet[];
-  cloud_network: VSwitchCloudNetwork[];
+  vlan: number;
 }
 
 export interface VSwitchServer {
   server_ip: string;
   server_ipv6_net: string;
   server_number: number;
-  status: 'ready' | 'in process' | 'failed';
+  status: "ready" | "in process" | "failed";
 }
 
 export interface VSwitchSubnet {
+  gateway: string;
   ip: string;
   mask: number;
-  gateway: string;
 }
 
 export interface VSwitchCloudNetwork {
+  gateway: string;
   id: number;
   ip: string;
   mask: number;
-  gateway: string;
 }
 
 // Storage Box Types
 export interface StorageBox {
-  id: number;
-  login: string;
-  name: string;
-  product: string;
   cancelled: boolean;
-  locked: boolean;
-  location: string;
-  linked_server: number | null;
-  paid_until: string;
   disk_quota: number;
   disk_usage: number;
   disk_usage_data: number;
   disk_usage_snapshots: number;
-  webdav: boolean;
-  samba: boolean;
-  ssh: boolean;
   external_reachability: boolean;
-  zfs: boolean;
-  server: string;
   host_system: string;
+  id: number;
+  linked_server: number | null;
+  location: string;
+  locked: boolean;
+  login: string;
+  name: string;
+  paid_until: string;
+  product: string;
+  samba: boolean;
+  server: string;
+  ssh: boolean;
+  webdav: boolean;
+  zfs: boolean;
 }
 
 export interface StorageBoxSnapshot {
   name: string;
-  timestamp: string;
   size: number;
   size_formatted: string;
+  timestamp: string;
 }
 
 export interface StorageBoxSnapshotPlan {
-  status: 'enabled' | 'disabled';
-  minute: number;
-  hour: number;
-  day_of_week: number;
   day_of_month: number;
+  day_of_week: number;
+  hour: number;
   max_snapshots: number;
+  minute: number;
+  status: "enabled" | "disabled";
 }
 
 export interface StorageBoxSubaccount {
-  username: string;
   accountid: string;
-  server: string;
-  homedirectory: string;
-  samba: boolean;
-  ssh: boolean;
-  external_reachability: boolean;
-  webdav: boolean;
-  readonly: boolean;
-  createtime: string;
   comment: string;
+  createtime: string;
+  external_reachability: boolean;
+  homedirectory: string;
+  readonly: boolean;
+  samba: boolean;
+  server: string;
+  ssh: boolean;
+  username: string;
+  webdav: boolean;
 }
 
 // Traffic Types
 export interface Traffic {
-  ip: string;
-  type: 'day' | 'month' | 'year';
-  from: string;
-  to: string;
   data: TrafficData[];
+  from: string;
+  ip: string;
+  to: string;
+  type: "day" | "month" | "year";
 }
 
 export interface TrafficData {
+  date?: string;
   in: number;
   out: number;
   sum: number;
-  date?: string;
 }
 
 // Wake on LAN Types
@@ -321,16 +321,16 @@ export interface Wol {
 
 // Order Types
 export interface ServerProduct {
-  id: string;
-  name: string;
-  description: string[];
-  traffic: string;
-  dist: string[];
   arch: number[];
+  description: string[];
+  dist: string[];
+  id: string;
   lang: string[];
   location: string[];
-  prices: ProductPrice[];
+  name: string;
   orderable_addons: string[];
+  prices: ProductPrice[];
+  traffic: string;
 }
 
 export interface ProductPrice {
@@ -343,61 +343,61 @@ export interface ProductPrice {
     net: string;
     gross: string;
   };
-  price_vat: {
+  price_setup_vat: {
     net: string;
     gross: string;
   };
-  price_setup_vat: {
+  price_vat: {
     net: string;
     gross: string;
   };
 }
 
 export interface ServerMarketProduct {
-  id: number;
-  name: string;
-  description: string[];
-  traffic: string;
-  dist: string[];
   arch: number[];
-  lang: string[];
   cpu: string;
   cpu_benchmark: number;
-  memory_size: number;
+  datacenter: string;
+  description: string[];
+  dist: string[];
+  fixed_price: boolean;
+  hdd_count: number;
   hdd_size: number;
   hdd_text: string;
-  hdd_count: number;
-  datacenter: string;
+  id: number;
+  lang: string[];
+  memory_size: number;
+  name: string;
   network_speed: string;
-  price: string;
-  price_setup: string;
-  fixed_price: boolean;
   next_reduce: number;
   next_reduce_date: string;
   orderable_addons: string[];
+  price: string;
+  price_setup: string;
+  traffic: string;
 }
 
 export interface ServerTransaction {
-  id: string;
-  date: string;
-  status: 'ready' | 'in process' | 'cancelled';
-  server_number: number | null;
-  server_ip: string | null;
   authorized_key: string[];
-  host_key: string[];
   comment: string;
+  date: string;
+  host_key: string[];
+  id: string;
   product: ServerTransactionProduct;
+  server_ip: string | null;
+  server_number: number | null;
+  status: "ready" | "in process" | "cancelled";
 }
 
 export interface ServerTransactionProduct {
-  id: string;
-  name: string;
-  description: string[];
-  traffic: string;
-  dist: string;
   arch: number;
+  description: string[];
+  dist: string;
+  id: string;
   lang: string;
   location: string;
+  name: string;
+  traffic: string;
 }
 
 // API Response Wrappers

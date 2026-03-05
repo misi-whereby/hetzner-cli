@@ -10,11 +10,11 @@ function escapeHtml(text: string): string {
 }
 
 export class Terminal {
-  private outputEl: HTMLElement;
-  private inputEl: HTMLInputElement;
-  private cursorEl: HTMLElement;
-  private containerEl: HTMLElement;
-  private history: string[] = [];
+  private readonly outputEl: HTMLElement;
+  private readonly inputEl: HTMLInputElement;
+  private readonly cursorEl: HTMLElement;
+  private readonly containerEl: HTMLElement;
+  private readonly history: string[] = [];
   private historyIndex = -1;
   private commandHandler: CommandHandler = () => "No command handler set";
   private enabled = false;
@@ -88,7 +88,9 @@ export class Terminal {
     const inputLine = this.containerEl.querySelector(
       ".terminal-input-line"
     ) as HTMLElement;
-    if (inputLine) inputLine.style.display = "flex";
+    if (inputLine) {
+      inputLine.style.display = "flex";
+    }
     this.inputEl.focus();
   }
 
@@ -101,7 +103,9 @@ export class Terminal {
   }
 
   private async handleKey(e: KeyboardEvent) {
-    if (!this.enabled) return;
+    if (!this.enabled) {
+      return;
+    }
 
     if (e.key === "Enter") {
       e.preventDefault();

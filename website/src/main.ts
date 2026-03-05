@@ -1,8 +1,8 @@
 import "./style.css";
-import { Terminal } from "./terminal.ts";
+import readmeRaw from "../../README.md?raw";
 import { executeCommand } from "./commands.ts";
 import { renderMarkdown } from "./markdown.ts";
-import readmeRaw from "../../README.md?raw";
+import { Terminal } from "./terminal.ts";
 
 // NOTE: All content is hardcoded static strings. No user input is interpolated into the DOM.
 
@@ -100,7 +100,9 @@ const tmuxW1 = document.createElement("span");
 tmuxW1.className = "tmux-window";
 tmuxW1.textContent = "1:readme";
 function tmuxBadge(label: string, value: string, href?: string): HTMLElement {
-  const el = href ? document.createElement("a") : document.createElement("span");
+  const el = href
+    ? document.createElement("a")
+    : document.createElement("span");
   el.className = "tmux-badge";
   if (href) {
     (el as HTMLAnchorElement).href = href;
@@ -117,11 +119,26 @@ function tmuxBadge(label: string, value: string, href?: string): HTMLElement {
   return el;
 }
 
-const badgeVersion = tmuxBadge("version", "v2.2.0", "https://www.npmjs.com/package/hetzner-cli");
-const badgeLicense = tmuxBadge("license", "MIT", "https://github.com/ytspar/hetzner-cli/blob/main/LICENSE");
+const badgeVersion = tmuxBadge(
+  "version",
+  "v2.2.0",
+  "https://www.npmjs.com/package/hetzner-cli"
+);
+const badgeLicense = tmuxBadge(
+  "license",
+  "MIT",
+  "https://github.com/ytspar/hetzner-cli/blob/main/LICENSE"
+);
 const badgeNode = tmuxBadge("node", ">=18");
 
-tmuxLeft.append(tmuxSession, tmuxW0, tmuxW1, badgeVersion, badgeLicense, badgeNode);
+tmuxLeft.append(
+  tmuxSession,
+  tmuxW0,
+  tmuxW1,
+  badgeVersion,
+  badgeLicense,
+  badgeNode
+);
 
 const tmuxRight = document.createElement("div");
 tmuxRight.className = "tmux-right";
@@ -142,7 +159,10 @@ const tmuxHost = document.createElement("span");
 tmuxHost.textContent = "demo@hetzner-cli";
 
 const ns = "http://www.w3.org/2000/svg";
-function pixelIcon(viewBox: string, shapes: Array<{ tag: string; attrs: Record<string, string> }>): SVGSVGElement {
+function pixelIcon(
+  viewBox: string,
+  shapes: Array<{ tag: string; attrs: Record<string, string> }>
+): SVGSVGElement {
   const svg = document.createElementNS(ns, "svg");
   svg.setAttribute("width", "14");
   svg.setAttribute("height", "14");
@@ -152,7 +172,9 @@ function pixelIcon(viewBox: string, shapes: Array<{ tag: string; attrs: Record<s
   svg.style.verticalAlign = "middle";
   for (const shape of shapes) {
     const el = document.createElementNS(ns, shape.tag);
-    for (const [k, v] of Object.entries(shape.attrs)) el.setAttribute(k, v);
+    for (const [k, v] of Object.entries(shape.attrs)) {
+      el.setAttribute(k, v);
+    }
     svg.appendChild(el);
   }
   return svg;
@@ -163,20 +185,36 @@ twitterLink.href = "https://twitter.com/ytspar";
 twitterLink.target = "_blank";
 twitterLink.rel = "noopener";
 twitterLink.className = "tmux-social";
-twitterLink.appendChild(pixelIcon("0 0 24 24", [
-  { tag: "rect", attrs: { x: "22", y: "5", width: "1", height: "1" } },
-  { tag: "rect", attrs: { x: "22", y: "3", width: "1", height: "1" } },
-  { tag: "polygon", attrs: { points: "21 5 21 6 22 6 22 7 21 7 21 12 20 12 20 14 19 14 19 16 18 16 18 17 17 17 17 18 16 18 16 19 14 19 14 20 11 20 11 21 4 21 4 20 2 20 2 19 1 19 1 18 3 18 3 19 6 19 6 18 7 18 7 17 5 17 5 16 4 16 4 15 3 15 3 14 5 14 5 13 3 13 3 12 2 12 2 10 4 10 4 9 3 9 3 8 2 8 2 4 3 4 3 5 4 5 4 6 5 6 5 7 7 7 7 8 10 8 10 9 12 9 12 5 13 5 13 4 14 4 14 3 19 3 19 4 22 4 22 5 21 5" } },
-]));
+twitterLink.appendChild(
+  pixelIcon("0 0 24 24", [
+    { tag: "rect", attrs: { x: "22", y: "5", width: "1", height: "1" } },
+    { tag: "rect", attrs: { x: "22", y: "3", width: "1", height: "1" } },
+    {
+      tag: "polygon",
+      attrs: {
+        points:
+          "21 5 21 6 22 6 22 7 21 7 21 12 20 12 20 14 19 14 19 16 18 16 18 17 17 17 17 18 16 18 16 19 14 19 14 20 11 20 11 21 4 21 4 20 2 20 2 19 1 19 1 18 3 18 3 19 6 19 6 18 7 18 7 17 5 17 5 16 4 16 4 15 3 15 3 14 5 14 5 13 3 13 3 12 2 12 2 10 4 10 4 9 3 9 3 8 2 8 2 4 3 4 3 5 4 5 4 6 5 6 5 7 7 7 7 8 10 8 10 9 12 9 12 5 13 5 13 4 14 4 14 3 19 3 19 4 22 4 22 5 21 5",
+      },
+    },
+  ])
+);
 
 const githubLink = document.createElement("a");
 githubLink.href = "https://github.com/ytspar";
 githubLink.target = "_blank";
 githubLink.rel = "noopener";
 githubLink.className = "tmux-social";
-githubLink.appendChild(pixelIcon("0 0 24 24", [
-  { tag: "polygon", attrs: { points: "23 9 23 15 22 15 22 17 21 17 21 19 20 19 20 20 19 20 19 21 18 21 18 22 16 22 16 23 15 23 15 18 14 18 14 17 15 17 15 16 17 16 17 15 18 15 18 14 19 14 19 9 18 9 18 6 16 6 16 7 15 7 15 8 14 8 14 7 10 7 10 8 9 8 9 7 8 7 8 6 6 6 6 9 5 9 5 14 6 14 6 15 7 15 7 16 9 16 9 18 7 18 7 17 6 17 6 16 4 16 4 17 5 17 5 19 6 19 6 20 9 20 9 23 8 23 8 22 6 22 6 21 5 21 5 20 4 20 4 19 3 19 3 17 2 17 2 15 1 15 1 9 2 9 2 7 3 7 3 5 4 5 4 4 5 4 5 3 7 3 7 2 9 2 9 1 15 1 15 2 17 2 17 3 19 3 19 4 20 4 20 5 21 5 21 7 22 7 22 9 23 9" } },
-]));
+githubLink.appendChild(
+  pixelIcon("0 0 24 24", [
+    {
+      tag: "polygon",
+      attrs: {
+        points:
+          "23 9 23 15 22 15 22 17 21 17 21 19 20 19 20 20 19 20 19 21 18 21 18 22 16 22 16 23 15 23 15 18 14 18 14 17 15 17 15 16 17 16 17 15 18 15 18 14 19 14 19 9 18 9 18 6 16 6 16 7 15 7 15 8 14 8 14 7 10 7 10 8 9 8 9 7 8 7 8 6 6 6 6 9 5 9 5 14 6 14 6 15 7 15 7 16 9 16 9 18 7 18 7 17 6 17 6 16 4 16 4 17 5 17 5 19 6 19 6 20 9 20 9 23 8 23 8 22 6 22 6 21 5 21 5 20 4 20 4 19 3 19 3 17 2 17 2 15 1 15 1 9 2 9 2 7 3 7 3 5 4 5 4 4 5 4 5 3 7 3 7 2 9 2 9 1 15 1 15 2 17 2 17 3 19 3 19 4 20 4 20 5 21 5 21 7 22 7 22 9 23 9",
+      },
+    },
+  ])
+);
 
 const byLine = document.createElement("span");
 byLine.className = "tmux-by";
@@ -252,9 +290,17 @@ async function showBootSequence(term: Terminal) {
   output.appendChild(authDiv);
 
   const lines = [
-    { text: "Initializing hetzner-cli v2.2.0...", cls: "auth-step", delay: 400 },
+    {
+      text: "Initializing hetzner-cli v2.2.0...",
+      cls: "auth-step",
+      delay: 400,
+    },
     { text: "  [\u2713] Loading configuration", cls: "auth-ok", delay: 300 },
-    { text: "  [\u2713] Robot API credentials found", cls: "auth-ok", delay: 350 },
+    {
+      text: "  [\u2713] Robot API credentials found",
+      cls: "auth-ok",
+      delay: 350,
+    },
     {
       text: '  [\u2713] Cloud API token loaded (context: "production")',
       cls: "auth-ok",
@@ -270,7 +316,11 @@ async function showBootSequence(term: Terminal) {
     },
     { text: "  Auction: 40 servers available", cls: "auth-info", delay: 300 },
     { text: "", cls: "auth-step", delay: 200 },
-    { text: "  [\u2713] Authenticated successfully", cls: "auth-ok", delay: 400 },
+    {
+      text: "  [\u2713] Authenticated successfully",
+      cls: "auth-ok",
+      delay: 400,
+    },
     { text: "", cls: "auth-step", delay: 150 },
     {
       text: 'Ready. Type "help" for available commands.',

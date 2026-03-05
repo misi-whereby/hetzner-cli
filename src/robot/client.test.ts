@@ -1,15 +1,15 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { HetznerRobotClient } from './client.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { HetznerRobotClient } from "./client.js";
 
 // Mock fetch globally
 const mockFetch = vi.fn();
-vi.stubGlobal('fetch', mockFetch);
+vi.stubGlobal("fetch", mockFetch);
 
-describe('HetznerRobotClient', () => {
+describe("HetznerRobotClient", () => {
   let client: HetznerRobotClient;
 
   beforeEach(() => {
-    client = new HetznerRobotClient('testuser', 'testpass');
+    client = new HetznerRobotClient("testuser", "testpass");
     mockFetch.mockReset();
   });
 
@@ -17,13 +17,13 @@ describe('HetznerRobotClient', () => {
     vi.clearAllMocks();
   });
 
-  describe('constructor', () => {
-    it('should create client with credentials', () => {
-      const c = new HetznerRobotClient('user', 'pass');
+  describe("constructor", () => {
+    it("should create client with credentials", () => {
+      const c = new HetznerRobotClient("user", "pass");
       expect(c).toBeInstanceOf(HetznerRobotClient);
     });
 
-    it('should encode credentials as base64', async () => {
+    it("should encode credentials as base64", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -36,52 +36,59 @@ describe('HetznerRobotClient', () => {
         expect.any(String),
         expect.objectContaining({
           headers: expect.objectContaining({
-            Authorization: `Basic ${Buffer.from('testuser:testpass').toString('base64')}`,
+            Authorization: `Basic ${Buffer.from("testuser:testpass").toString("base64")}`,
           }),
         })
       );
     });
   });
 
-  describe('error handling', () => {
-    it('should throw on non-ok response', async () => {
+  describe("error handling", () => {
+    it("should throw on non-ok response", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 401,
-        statusText: 'Unauthorized',
-        json: () => Promise.resolve({ error: { code: 'AUTH_ERROR', message: 'Invalid credentials' } }),
+        statusText: "Unauthorized",
+        json: () =>
+          Promise.resolve({
+            error: { code: "AUTH_ERROR", message: "Invalid credentials" },
+          }),
       });
 
-      await expect(client.listServers()).rejects.toThrow('AUTH_ERROR: Invalid credentials');
+      await expect(client.listServers()).rejects.toThrow(
+        "AUTH_ERROR: Invalid credentials"
+      );
     });
 
-    it('should handle non-JSON error response', async () => {
+    it("should handle non-JSON error response", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 500,
-        statusText: 'Internal Server Error',
-        json: () => Promise.reject(new Error('Not JSON')),
+        statusText: "Internal Server Error",
+        json: () => Promise.reject(new Error("Not JSON")),
       });
 
-      await expect(client.listServers()).rejects.toThrow('HTTP 500: Internal Server Error');
+      await expect(client.listServers()).rejects.toThrow(
+        "HTTP 500: Internal Server Error"
+      );
     });
 
-    it('should handle 204 No Content', async () => {
+    it("should handle 204 No Content", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 204,
-        json: () => Promise.reject(new Error('No content')),
+        json: () => Promise.reject(new Error("No content")),
       });
 
       // deleteRdns returns void, so we just check it doesn't throw
-      await expect(client.deleteRdns('1.2.3.4')).resolves.not.toThrow();
+      await expect(client.deleteRdns("1.2.3.4")).resolves.not.toThrow();
     });
   });
 
-  describe('Server Management', () => {
-    it('should list servers', async () => {
+  describe("Server Management", () => {
+    it("should list servers", async () => {
       const mockServers = [
-        { server: { server_ip: '1.2.3.4', server_number: 123 } },
+        { server: { server_ip: "1.2.3.4", server_number: 123 } },
       ];
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -92,31 +99,35 @@ describe('HetznerRobotClient', () => {
       const result = await client.listServers();
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/server',
+        "https://robot-ws.your-server.de/server",
         expect.any(Object)
       );
       expect(result).toEqual(mockServers);
     });
 
-    it('should get server details', async () => {
-      const mockServer = { server: { server_ip: '1.2.3.4', server_number: 123 } };
+    it("should get server details", async () => {
+      const mockServer = {
+        server: { server_ip: "1.2.3.4", server_number: 123 },
+      };
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: () => Promise.resolve(mockServer),
       });
 
-      const result = await client.getServer('1.2.3.4');
+      const result = await client.getServer("1.2.3.4");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/server/1.2.3.4',
+        "https://robot-ws.your-server.de/server/1.2.3.4",
         expect.any(Object)
       );
       expect(result).toEqual(mockServer);
     });
 
-    it('should get server by number', async () => {
-      const mockServer = { server: { server_ip: '1.2.3.4', server_number: 123 } };
+    it("should get server by number", async () => {
+      const mockServer = {
+        server: { server_ip: "1.2.3.4", server_number: 123 },
+      };
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -126,32 +137,32 @@ describe('HetznerRobotClient', () => {
       await client.getServer(123);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/server/123',
+        "https://robot-ws.your-server.de/server/123",
         expect.any(Object)
       );
     });
 
-    it('should update server name', async () => {
+    it("should update server name", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ server: { server_name: 'new-name' } }),
+        json: () => Promise.resolve({ server: { server_name: "new-name" } }),
       });
 
-      await client.updateServerName(123, 'new-name');
+      await client.updateServerName(123, "new-name");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/server/123',
+        "https://robot-ws.your-server.de/server/123",
         expect.objectContaining({
-          method: 'POST',
-          body: 'server_name=new-name',
+          method: "POST",
+          body: "server_name=new-name",
         })
       );
     });
   });
 
-  describe('Cancellation', () => {
-    it('should get cancellation status', async () => {
+  describe("Cancellation", () => {
+    it("should get cancellation status", async () => {
       const mockCancellation = { cancellation: { cancelled: false } };
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -162,31 +173,31 @@ describe('HetznerRobotClient', () => {
       const result = await client.getCancellation(123);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/server/123/cancellation',
+        "https://robot-ws.your-server.de/server/123/cancellation",
         expect.any(Object)
       );
       expect(result).toEqual(mockCancellation);
     });
 
-    it('should cancel server with date and reasons', async () => {
+    it("should cancel server with date and reasons", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: () => Promise.resolve({ cancellation: { cancelled: true } }),
       });
 
-      await client.cancelServer(123, '2024-12-31', ['price', 'service']);
+      await client.cancelServer(123, "2024-12-31", ["price", "service"]);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/cancellation'),
+        expect.stringContaining("/cancellation"),
         expect.objectContaining({
-          method: 'POST',
-          body: expect.stringContaining('cancellation_date=2024-12-31'),
+          method: "POST",
+          body: expect.stringContaining("cancellation_date=2024-12-31"),
         })
       );
     });
 
-    it('should revoke cancellation', async () => {
+    it("should revoke cancellation", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 204,
@@ -195,15 +206,17 @@ describe('HetznerRobotClient', () => {
       await client.revokeCancellation(123);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/server/123/cancellation',
-        expect.objectContaining({ method: 'DELETE' })
+        "https://robot-ws.your-server.de/server/123/cancellation",
+        expect.objectContaining({ method: "DELETE" })
       );
     });
   });
 
-  describe('Reset', () => {
-    it('should list reset options', async () => {
-      const mockResets = [{ reset: { server_number: 123, type: ['sw', 'hw'] } }];
+  describe("Reset", () => {
+    it("should list reset options", async () => {
+      const mockResets = [
+        { reset: { server_number: 123, type: ["sw", "hw"] } },
+      ];
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -213,28 +226,28 @@ describe('HetznerRobotClient', () => {
       const result = await client.listResetOptions();
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/reset',
+        "https://robot-ws.your-server.de/reset",
         expect.any(Object)
       );
       expect(result).toEqual(mockResets);
     });
 
-    it('should get reset options for server', async () => {
+    it("should get reset options for server", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ reset: { type: ['sw', 'hw'] } }),
+        json: () => Promise.resolve({ reset: { type: ["sw", "hw"] } }),
       });
 
       await client.getResetOptions(123);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/reset/123',
+        "https://robot-ws.your-server.de/reset/123",
         expect.any(Object)
       );
     });
 
-    it('should reset server with default type', async () => {
+    it("should reset server with default type", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -244,35 +257,35 @@ describe('HetznerRobotClient', () => {
       await client.resetServer(123);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/reset/123',
+        "https://robot-ws.your-server.de/reset/123",
         expect.objectContaining({
-          method: 'POST',
-          body: 'type=sw',
+          method: "POST",
+          body: "type=sw",
         })
       );
     });
 
-    it('should reset server with specified type', async () => {
+    it("should reset server with specified type", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: () => Promise.resolve({ reset: { server_number: 123 } }),
       });
 
-      await client.resetServer(123, 'hw');
+      await client.resetServer(123, "hw");
 
       expect(mockFetch).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({
-          method: 'POST',
-          body: 'type=hw',
+          method: "POST",
+          body: "type=hw",
         })
       );
     });
   });
 
-  describe('Boot Configuration', () => {
-    it('should get boot config', async () => {
+  describe("Boot Configuration", () => {
+    it("should get boot config", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -282,30 +295,31 @@ describe('HetznerRobotClient', () => {
       await client.getBootConfig(123);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/boot/123',
+        "https://robot-ws.your-server.de/boot/123",
         expect.any(Object)
       );
     });
 
-    it('should activate rescue', async () => {
+    it("should activate rescue", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ rescue: { active: true, password: 'abc123' } }),
+        json: () =>
+          Promise.resolve({ rescue: { active: true, password: "abc123" } }),
       });
 
-      await client.activateRescue(123, 'linux', 64, ['fingerprint1']);
+      await client.activateRescue(123, "linux", 64, ["fingerprint1"]);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/boot/123/rescue',
+        "https://robot-ws.your-server.de/boot/123/rescue",
         expect.objectContaining({
-          method: 'POST',
-          body: expect.stringContaining('os=linux'),
+          method: "POST",
+          body: expect.stringContaining("os=linux"),
         })
       );
     });
 
-    it('should deactivate rescue', async () => {
+    it("should deactivate rescue", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -315,45 +329,45 @@ describe('HetznerRobotClient', () => {
       await client.deactivateRescue(123);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/boot/123/rescue',
-        expect.objectContaining({ method: 'DELETE' })
+        "https://robot-ws.your-server.de/boot/123/rescue",
+        expect.objectContaining({ method: "DELETE" })
       );
     });
 
-    it('should get last rescue', async () => {
+    it("should get last rescue", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ rescue: { password: 'old-pass' } }),
+        json: () => Promise.resolve({ rescue: { password: "old-pass" } }),
       });
 
       await client.getLastRescue(123);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/boot/123/rescue/last',
+        "https://robot-ws.your-server.de/boot/123/rescue/last",
         expect.any(Object)
       );
     });
 
-    it('should activate linux', async () => {
+    it("should activate linux", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: () => Promise.resolve({ linux: { active: true } }),
       });
 
-      await client.activateLinux(123, 'Debian-12', 64, 'en', ['key1']);
+      await client.activateLinux(123, "Debian-12", 64, "en", ["key1"]);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/boot/123/linux',
+        "https://robot-ws.your-server.de/boot/123/linux",
         expect.objectContaining({
-          method: 'POST',
-          body: expect.stringContaining('dist=Debian-12'),
+          method: "POST",
+          body: expect.stringContaining("dist=Debian-12"),
         })
       );
     });
 
-    it('should deactivate linux', async () => {
+    it("should deactivate linux", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -363,381 +377,385 @@ describe('HetznerRobotClient', () => {
       await client.deactivateLinux(123);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/boot/123/linux',
-        expect.objectContaining({ method: 'DELETE' })
+        "https://robot-ws.your-server.de/boot/123/linux",
+        expect.objectContaining({ method: "DELETE" })
       );
     });
 
-    it('should activate vnc', async () => {
+    it("should activate vnc", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: () => Promise.resolve({ vnc: { active: true } }),
       });
 
-      await client.activateVnc(123, 'Debian-12', 64, 'en');
+      await client.activateVnc(123, "Debian-12", 64, "en");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/boot/123/vnc',
-        expect.objectContaining({ method: 'POST' })
+        "https://robot-ws.your-server.de/boot/123/vnc",
+        expect.objectContaining({ method: "POST" })
       );
     });
 
-    it('should activate windows', async () => {
+    it("should activate windows", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: () => Promise.resolve({ windows: { active: true } }),
       });
 
-      await client.activateWindows(123, 'standard', 'en');
+      await client.activateWindows(123, "standard", "en");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/boot/123/windows',
-        expect.objectContaining({ method: 'POST' })
+        "https://robot-ws.your-server.de/boot/123/windows",
+        expect.objectContaining({ method: "POST" })
       );
     });
   });
 
-  describe('IP Management', () => {
-    it('should list IPs', async () => {
+  describe("IP Management", () => {
+    it("should list IPs", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve([{ ip: { ip: '1.2.3.4' } }]),
+        json: () => Promise.resolve([{ ip: { ip: "1.2.3.4" } }]),
       });
 
       await client.listIps();
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/ip',
+        "https://robot-ws.your-server.de/ip",
         expect.any(Object)
       );
     });
 
-    it('should get IP', async () => {
+    it("should get IP", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ ip: { ip: '1.2.3.4' } }),
+        json: () => Promise.resolve({ ip: { ip: "1.2.3.4" } }),
       });
 
-      await client.getIp('1.2.3.4');
+      await client.getIp("1.2.3.4");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/ip/1.2.3.4',
+        "https://robot-ws.your-server.de/ip/1.2.3.4",
         expect.any(Object)
       );
     });
 
-    it('should update IP', async () => {
+    it("should update IP", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: () => Promise.resolve({ ip: { traffic_warnings: true } }),
       });
 
-      await client.updateIp('1.2.3.4', true, 100, 1000, 10);
+      await client.updateIp("1.2.3.4", true, 100, 1000, 10);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/ip/1.2.3.4',
+        "https://robot-ws.your-server.de/ip/1.2.3.4",
         expect.objectContaining({
-          method: 'POST',
-          body: expect.stringContaining('traffic_warnings=true'),
+          method: "POST",
+          body: expect.stringContaining("traffic_warnings=true"),
         })
       );
     });
 
-    it('should generate IP MAC', async () => {
+    it("should generate IP MAC", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ mac: { mac: 'aa:bb:cc:dd:ee:ff' } }),
+        json: () => Promise.resolve({ mac: { mac: "aa:bb:cc:dd:ee:ff" } }),
       });
 
-      await client.generateIpMac('1.2.3.4');
+      await client.generateIpMac("1.2.3.4");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/ip/1.2.3.4/mac',
-        expect.objectContaining({ method: 'PUT' })
+        "https://robot-ws.your-server.de/ip/1.2.3.4/mac",
+        expect.objectContaining({ method: "PUT" })
       );
     });
 
-    it('should delete IP MAC', async () => {
+    it("should delete IP MAC", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 204,
       });
 
-      await client.deleteIpMac('1.2.3.4');
+      await client.deleteIpMac("1.2.3.4");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/ip/1.2.3.4/mac',
-        expect.objectContaining({ method: 'DELETE' })
+        "https://robot-ws.your-server.de/ip/1.2.3.4/mac",
+        expect.objectContaining({ method: "DELETE" })
       );
     });
   });
 
-  describe('Subnet Management', () => {
-    it('should list subnets', async () => {
+  describe("Subnet Management", () => {
+    it("should list subnets", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve([{ subnet: { ip: '10.0.0.0' } }]),
+        json: () => Promise.resolve([{ subnet: { ip: "10.0.0.0" } }]),
       });
 
       await client.listSubnets();
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/subnet',
+        "https://robot-ws.your-server.de/subnet",
         expect.any(Object)
       );
     });
 
-    it('should get subnet', async () => {
+    it("should get subnet", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ subnet: { ip: '10.0.0.0' } }),
+        json: () => Promise.resolve({ subnet: { ip: "10.0.0.0" } }),
       });
 
-      await client.getSubnet('10.0.0.0');
+      await client.getSubnet("10.0.0.0");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/subnet/10.0.0.0',
+        "https://robot-ws.your-server.de/subnet/10.0.0.0",
         expect.any(Object)
       );
     });
 
-    it('should update subnet', async () => {
+    it("should update subnet", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: () => Promise.resolve({ subnet: {} }),
       });
 
-      await client.updateSubnet('10.0.0.0', true, 100, 1000, 10);
+      await client.updateSubnet("10.0.0.0", true, 100, 1000, 10);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/subnet/10.0.0.0',
-        expect.objectContaining({ method: 'POST' })
+        "https://robot-ws.your-server.de/subnet/10.0.0.0",
+        expect.objectContaining({ method: "POST" })
       );
     });
 
-    it('should generate subnet MAC', async () => {
+    it("should generate subnet MAC", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ mac: { mac: 'aa:bb:cc:dd:ee:ff' } }),
+        json: () => Promise.resolve({ mac: { mac: "aa:bb:cc:dd:ee:ff" } }),
       });
 
-      await client.generateSubnetMac('10.0.0.0');
+      await client.generateSubnetMac("10.0.0.0");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/subnet/10.0.0.0/mac',
-        expect.objectContaining({ method: 'PUT' })
+        "https://robot-ws.your-server.de/subnet/10.0.0.0/mac",
+        expect.objectContaining({ method: "PUT" })
       );
     });
   });
 
-  describe('Failover', () => {
-    it('should list failovers', async () => {
+  describe("Failover", () => {
+    it("should list failovers", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve([{ failover: { ip: '1.2.3.4' } }]),
+        json: () => Promise.resolve([{ failover: { ip: "1.2.3.4" } }]),
       });
 
       await client.listFailovers();
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/failover',
+        "https://robot-ws.your-server.de/failover",
         expect.any(Object)
       );
     });
 
-    it('should switch failover', async () => {
+    it("should switch failover", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ failover: { active_server_ip: '5.6.7.8' } }),
+        json: () =>
+          Promise.resolve({ failover: { active_server_ip: "5.6.7.8" } }),
       });
 
-      await client.switchFailover('1.2.3.4', '5.6.7.8');
+      await client.switchFailover("1.2.3.4", "5.6.7.8");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/failover/1.2.3.4',
+        "https://robot-ws.your-server.de/failover/1.2.3.4",
         expect.objectContaining({
-          method: 'POST',
-          body: 'active_server_ip=5.6.7.8',
+          method: "POST",
+          body: "active_server_ip=5.6.7.8",
         })
       );
     });
 
-    it('should delete failover routing', async () => {
+    it("should delete failover routing", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 204,
       });
 
-      await client.deleteFailoverRouting('1.2.3.4');
+      await client.deleteFailoverRouting("1.2.3.4");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/failover/1.2.3.4',
-        expect.objectContaining({ method: 'DELETE' })
+        "https://robot-ws.your-server.de/failover/1.2.3.4",
+        expect.objectContaining({ method: "DELETE" })
       );
     });
   });
 
-  describe('Reverse DNS', () => {
-    it('should list RDNS', async () => {
+  describe("Reverse DNS", () => {
+    it("should list RDNS", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve([{ rdns: { ip: '1.2.3.4', ptr: 'host.example.com' } }]),
+        json: () =>
+          Promise.resolve([
+            { rdns: { ip: "1.2.3.4", ptr: "host.example.com" } },
+          ]),
       });
 
       await client.listRdns();
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/rdns',
+        "https://robot-ws.your-server.de/rdns",
         expect.any(Object)
       );
     });
 
-    it('should create RDNS', async () => {
+    it("should create RDNS", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ rdns: { ptr: 'host.example.com' } }),
+        json: () => Promise.resolve({ rdns: { ptr: "host.example.com" } }),
       });
 
-      await client.createRdns('1.2.3.4', 'host.example.com');
+      await client.createRdns("1.2.3.4", "host.example.com");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/rdns/1.2.3.4',
+        "https://robot-ws.your-server.de/rdns/1.2.3.4",
         expect.objectContaining({
-          method: 'PUT',
-          body: 'ptr=host.example.com',
+          method: "PUT",
+          body: "ptr=host.example.com",
         })
       );
     });
 
-    it('should update RDNS', async () => {
+    it("should update RDNS", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ rdns: { ptr: 'new.example.com' } }),
+        json: () => Promise.resolve({ rdns: { ptr: "new.example.com" } }),
       });
 
-      await client.updateRdns('1.2.3.4', 'new.example.com');
+      await client.updateRdns("1.2.3.4", "new.example.com");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/rdns/1.2.3.4',
-        expect.objectContaining({ method: 'POST' })
+        "https://robot-ws.your-server.de/rdns/1.2.3.4",
+        expect.objectContaining({ method: "POST" })
       );
     });
   });
 
-  describe('SSH Keys', () => {
-    it('should list SSH keys', async () => {
+  describe("SSH Keys", () => {
+    it("should list SSH keys", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve([{ key: { fingerprint: 'ab:cd:ef' } }]),
+        json: () => Promise.resolve([{ key: { fingerprint: "ab:cd:ef" } }]),
       });
 
       await client.listSshKeys();
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/key',
+        "https://robot-ws.your-server.de/key",
         expect.any(Object)
       );
     });
 
-    it('should create SSH key', async () => {
+    it("should create SSH key", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ key: { fingerprint: 'ab:cd:ef' } }),
+        json: () => Promise.resolve({ key: { fingerprint: "ab:cd:ef" } }),
       });
 
-      await client.createSshKey('my-key', 'ssh-rsa AAAA...');
+      await client.createSshKey("my-key", "ssh-rsa AAAA...");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/key',
+        "https://robot-ws.your-server.de/key",
         expect.objectContaining({
-          method: 'POST',
-          body: expect.stringContaining('name=my-key'),
+          method: "POST",
+          body: expect.stringContaining("name=my-key"),
         })
       );
     });
 
-    it('should update SSH key', async () => {
+    it("should update SSH key", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ key: { name: 'new-name' } }),
+        json: () => Promise.resolve({ key: { name: "new-name" } }),
       });
 
-      await client.updateSshKey('ab:cd:ef', 'new-name');
+      await client.updateSshKey("ab:cd:ef", "new-name");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/key/ab:cd:ef',
-        expect.objectContaining({ method: 'POST' })
+        "https://robot-ws.your-server.de/key/ab:cd:ef",
+        expect.objectContaining({ method: "POST" })
       );
     });
 
-    it('should delete SSH key', async () => {
+    it("should delete SSH key", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 204,
       });
 
-      await client.deleteSshKey('ab:cd:ef');
+      await client.deleteSshKey("ab:cd:ef");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/key/ab:cd:ef',
-        expect.objectContaining({ method: 'DELETE' })
+        "https://robot-ws.your-server.de/key/ab:cd:ef",
+        expect.objectContaining({ method: "DELETE" })
       );
     });
   });
 
-  describe('Firewall', () => {
-    it('should get firewall', async () => {
+  describe("Firewall", () => {
+    it("should get firewall", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ firewall: { status: 'active' } }),
+        json: () => Promise.resolve({ firewall: { status: "active" } }),
       });
 
       await client.getFirewall(123);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/firewall/123',
+        "https://robot-ws.your-server.de/firewall/123",
         expect.any(Object)
       );
     });
 
-    it('should update firewall', async () => {
+    it("should update firewall", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ firewall: { status: 'active' } }),
+        json: () => Promise.resolve({ firewall: { status: "active" } }),
       });
 
-      await client.updateFirewall(123, 'active');
+      await client.updateFirewall(123, "active");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/firewall/123',
+        "https://robot-ws.your-server.de/firewall/123",
         expect.objectContaining({
-          method: 'POST',
-          body: 'status=active',
+          method: "POST",
+          body: "status=active",
         })
       );
     });
 
-    it('should delete firewall', async () => {
+    it("should delete firewall", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 204,
@@ -746,12 +764,12 @@ describe('HetznerRobotClient', () => {
       await client.deleteFirewall(123);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/firewall/123',
-        expect.objectContaining({ method: 'DELETE' })
+        "https://robot-ws.your-server.de/firewall/123",
+        expect.objectContaining({ method: "DELETE" })
       );
     });
 
-    it('should list firewall templates', async () => {
+    it("should list firewall templates", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -761,27 +779,27 @@ describe('HetznerRobotClient', () => {
       await client.listFirewallTemplates();
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/firewall/template',
+        "https://robot-ws.your-server.de/firewall/template",
         expect.any(Object)
       );
     });
 
-    it('should create firewall template', async () => {
+    it("should create firewall template", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: () => Promise.resolve({ firewall_template: { id: 1 } }),
       });
 
-      await client.createFirewallTemplate('my-template', true, false, true);
+      await client.createFirewallTemplate("my-template", true, false, true);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/firewall/template',
-        expect.objectContaining({ method: 'POST' })
+        "https://robot-ws.your-server.de/firewall/template",
+        expect.objectContaining({ method: "POST" })
       );
     });
 
-    it('should delete firewall template', async () => {
+    it("should delete firewall template", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 204,
@@ -790,14 +808,14 @@ describe('HetznerRobotClient', () => {
       await client.deleteFirewallTemplate(1);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/firewall/template/1',
-        expect.objectContaining({ method: 'DELETE' })
+        "https://robot-ws.your-server.de/firewall/template/1",
+        expect.objectContaining({ method: "DELETE" })
       );
     });
   });
 
-  describe('vSwitch', () => {
-    it('should list vSwitches', async () => {
+  describe("vSwitch", () => {
+    it("should list vSwitches", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -807,45 +825,45 @@ describe('HetznerRobotClient', () => {
       await client.listVSwitches();
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/vswitch',
+        "https://robot-ws.your-server.de/vswitch",
         expect.any(Object)
       );
     });
 
-    it('should create vSwitch', async () => {
+    it("should create vSwitch", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: () => Promise.resolve({ vswitch: { id: 1 } }),
       });
 
-      await client.createVSwitch('my-vswitch', 4000);
+      await client.createVSwitch("my-vswitch", 4000);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/vswitch',
+        "https://robot-ws.your-server.de/vswitch",
         expect.objectContaining({
-          method: 'POST',
-          body: 'name=my-vswitch&vlan=4000',
+          method: "POST",
+          body: "name=my-vswitch&vlan=4000",
         })
       );
     });
 
-    it('should update vSwitch', async () => {
+    it("should update vSwitch", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: () => Promise.resolve({ vswitch: { id: 1 } }),
       });
 
-      await client.updateVSwitch(1, 'new-name', 4001);
+      await client.updateVSwitch(1, "new-name", 4001);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/vswitch/1',
-        expect.objectContaining({ method: 'POST' })
+        "https://robot-ws.your-server.de/vswitch/1",
+        expect.objectContaining({ method: "POST" })
       );
     });
 
-    it('should delete vSwitch', async () => {
+    it("should delete vSwitch", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 204,
@@ -854,12 +872,12 @@ describe('HetznerRobotClient', () => {
       await client.deleteVSwitch(1);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/vswitch/1',
-        expect.objectContaining({ method: 'DELETE' })
+        "https://robot-ws.your-server.de/vswitch/1",
+        expect.objectContaining({ method: "DELETE" })
       );
     });
 
-    it('should add server to vSwitch', async () => {
+    it("should add server to vSwitch", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -869,15 +887,15 @@ describe('HetznerRobotClient', () => {
       await client.addServerToVSwitch(1, 123);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/vswitch/1/server',
+        "https://robot-ws.your-server.de/vswitch/1/server",
         expect.objectContaining({
-          method: 'POST',
-          body: 'server=123',
+          method: "POST",
+          body: "server=123",
         })
       );
     });
 
-    it('should remove server from vSwitch', async () => {
+    it("should remove server from vSwitch", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 204,
@@ -886,14 +904,14 @@ describe('HetznerRobotClient', () => {
       await client.removeServerFromVSwitch(1, 123);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/vswitch/1/server',
-        expect.objectContaining({ method: 'DELETE' })
+        "https://robot-ws.your-server.de/vswitch/1/server",
+        expect.objectContaining({ method: "DELETE" })
       );
     });
   });
 
-  describe('Storage Box', () => {
-    it('should list storage boxes', async () => {
+  describe("Storage Box", () => {
+    it("should list storage boxes", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -903,134 +921,149 @@ describe('HetznerRobotClient', () => {
       await client.listStorageBoxes();
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/storagebox',
+        "https://robot-ws.your-server.de/storagebox",
         expect.any(Object)
       );
     });
 
-    it('should update storage box', async () => {
+    it("should update storage box", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: () => Promise.resolve({ storagebox: { id: 1 } }),
       });
 
-      await client.updateStorageBox(1, 'my-box', true, true, true, true, false);
+      await client.updateStorageBox(1, "my-box", true, true, true, true, false);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/storagebox/1',
-        expect.objectContaining({ method: 'POST' })
+        "https://robot-ws.your-server.de/storagebox/1",
+        expect.objectContaining({ method: "POST" })
       );
     });
 
-    it('should reset storage box password', async () => {
+    it("should reset storage box password", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ password: 'new-password' }),
+        json: () => Promise.resolve({ password: "new-password" }),
       });
 
       const result = await client.resetStorageBoxPassword(1);
 
-      expect(result.password).toBe('new-password');
+      expect(result.password).toBe("new-password");
     });
 
-    it('should list snapshots', async () => {
+    it("should list snapshots", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve([{ snapshot: { name: 'snap1' } }]),
+        json: () => Promise.resolve([{ snapshot: { name: "snap1" } }]),
       });
 
       await client.listStorageBoxSnapshots(1);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/storagebox/1/snapshot',
+        "https://robot-ws.your-server.de/storagebox/1/snapshot",
         expect.any(Object)
       );
     });
 
-    it('should create snapshot', async () => {
+    it("should create snapshot", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ snapshot: { name: 'snap1' } }),
+        json: () => Promise.resolve({ snapshot: { name: "snap1" } }),
       });
 
       await client.createStorageBoxSnapshot(1);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/storagebox/1/snapshot',
-        expect.objectContaining({ method: 'POST' })
+        "https://robot-ws.your-server.de/storagebox/1/snapshot",
+        expect.objectContaining({ method: "POST" })
       );
     });
 
-    it('should delete snapshot', async () => {
+    it("should delete snapshot", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 204,
       });
 
-      await client.deleteStorageBoxSnapshot(1, 'snap1');
+      await client.deleteStorageBoxSnapshot(1, "snap1");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/storagebox/1/snapshot/snap1',
-        expect.objectContaining({ method: 'DELETE' })
+        "https://robot-ws.your-server.de/storagebox/1/snapshot/snap1",
+        expect.objectContaining({ method: "DELETE" })
       );
     });
 
-    it('should revert snapshot', async () => {
+    it("should revert snapshot", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 204,
       });
 
-      await client.revertStorageBoxSnapshot(1, 'snap1');
+      await client.revertStorageBoxSnapshot(1, "snap1");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/storagebox/1/snapshot/snap1/revert',
-        expect.objectContaining({ method: 'POST' })
+        "https://robot-ws.your-server.de/storagebox/1/snapshot/snap1/revert",
+        expect.objectContaining({ method: "POST" })
       );
     });
 
-    it('should manage subaccounts', async () => {
+    it("should manage subaccounts", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ subaccount: { username: 'sub1' } }),
+        json: () => Promise.resolve({ subaccount: { username: "sub1" } }),
       });
 
-      await client.createStorageBoxSubaccount(1, '/home/user', true, true, true, true, false, 'comment');
+      await client.createStorageBoxSubaccount(
+        1,
+        "/home/user",
+        true,
+        true,
+        true,
+        true,
+        false,
+        "comment"
+      );
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/storagebox/1/subaccount',
-        expect.objectContaining({ method: 'POST' })
+        "https://robot-ws.your-server.de/storagebox/1/subaccount",
+        expect.objectContaining({ method: "POST" })
       );
     });
   });
 
-  describe('Traffic', () => {
-    it('should get traffic', async () => {
+  describe("Traffic", () => {
+    it("should get traffic", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: () => Promise.resolve({ traffic: { data: [] } }),
       });
 
-      await client.getTraffic(['1.2.3.4'], ['10.0.0.0'], '2024-01-01', '2024-01-31', 'month');
+      await client.getTraffic(
+        ["1.2.3.4"],
+        ["10.0.0.0"],
+        "2024-01-01",
+        "2024-01-31",
+        "month"
+      );
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/traffic',
+        "https://robot-ws.your-server.de/traffic",
         expect.objectContaining({
-          method: 'POST',
-          body: expect.stringContaining('type=month'),
+          method: "POST",
+          body: expect.stringContaining("type=month"),
         })
       );
     });
   });
 
-  describe('Wake on LAN', () => {
-    it('should get WoL status', async () => {
+  describe("Wake on LAN", () => {
+    it("should get WoL status", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -1040,12 +1073,12 @@ describe('HetznerRobotClient', () => {
       await client.getWol(123);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/wol/123',
+        "https://robot-ws.your-server.de/wol/123",
         expect.any(Object)
       );
     });
 
-    it('should send WoL', async () => {
+    it("should send WoL", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -1055,29 +1088,29 @@ describe('HetznerRobotClient', () => {
       await client.sendWol(123);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/wol/123',
-        expect.objectContaining({ method: 'POST' })
+        "https://robot-ws.your-server.de/wol/123",
+        expect.objectContaining({ method: "POST" })
       );
     });
   });
 
-  describe('Ordering', () => {
-    it('should list server products', async () => {
+  describe("Ordering", () => {
+    it("should list server products", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve([{ product: { id: 'AX41' } }]),
+        json: () => Promise.resolve([{ product: { id: "AX41" } }]),
       });
 
       await client.listServerProducts();
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/order/server/product',
+        "https://robot-ws.your-server.de/order/server/product",
         expect.any(Object)
       );
     });
 
-    it('should list market products', async () => {
+    it("should list market products", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -1087,153 +1120,181 @@ describe('HetznerRobotClient', () => {
       await client.listServerMarketProducts();
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/order/server_market/product',
+        "https://robot-ws.your-server.de/order/server_market/product",
         expect.any(Object)
       );
     });
 
-    it('should list transactions', async () => {
+    it("should list transactions", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve([{ transaction: { id: 'TX-1' } }]),
+        json: () => Promise.resolve([{ transaction: { id: "TX-1" } }]),
       });
 
       await client.listServerTransactions();
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/order/server/transaction',
+        "https://robot-ws.your-server.de/order/server/transaction",
         expect.any(Object)
       );
     });
 
-    it('should order server', async () => {
+    it("should order server", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ transaction: { id: 'TX-1' } }),
+        json: () => Promise.resolve({ transaction: { id: "TX-1" } }),
       });
 
-      await client.orderServer('AX41', ['key1'], 'pass', 'Debian', 64, 'en', 'FSN1', ['addon1'], true);
+      await client.orderServer(
+        "AX41",
+        ["key1"],
+        "pass",
+        "Debian",
+        64,
+        "en",
+        "FSN1",
+        ["addon1"],
+        true
+      );
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/order/server/transaction',
-        expect.objectContaining({ method: 'POST' })
+        "https://robot-ws.your-server.de/order/server/transaction",
+        expect.objectContaining({ method: "POST" })
       );
     });
 
-    it('should order server market product', async () => {
+    it("should order server market product", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ transaction: { id: 'TX-1' } }),
+        json: () => Promise.resolve({ transaction: { id: "TX-1" } }),
       });
 
-      await client.orderServerMarket(12345, ['key1'], 'pass', 'Debian', 64, 'en', ['addon1'], true);
+      await client.orderServerMarket(
+        12_345,
+        ["key1"],
+        "pass",
+        "Debian",
+        64,
+        "en",
+        ["addon1"],
+        true
+      );
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/order/server_market/transaction',
-        expect.objectContaining({ method: 'POST' })
+        "https://robot-ws.your-server.de/order/server_market/transaction",
+        expect.objectContaining({ method: "POST" })
       );
     });
   });
 
-  describe('Storage Box Snapshot Plan', () => {
-    it('should get snapshot plan', async () => {
+  describe("Storage Box Snapshot Plan", () => {
+    it("should get snapshot plan", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ snapshotplan: { status: 'enabled' } }),
+        json: () => Promise.resolve({ snapshotplan: { status: "enabled" } }),
       });
 
       await client.getStorageBoxSnapshotPlan(1);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/storagebox/1/snapshotplan',
+        "https://robot-ws.your-server.de/storagebox/1/snapshotplan",
         expect.any(Object)
       );
     });
 
-    it('should update snapshot plan', async () => {
+    it("should update snapshot plan", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ snapshotplan: { status: 'enabled' } }),
+        json: () => Promise.resolve({ snapshotplan: { status: "enabled" } }),
       });
 
-      await client.updateStorageBoxSnapshotPlan(1, 'enabled', 0, 3, 1, 15, 10);
+      await client.updateStorageBoxSnapshotPlan(1, "enabled", 0, 3, 1, 15, 10);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/storagebox/1/snapshotplan',
-        expect.objectContaining({ method: 'POST' })
+        "https://robot-ws.your-server.de/storagebox/1/snapshotplan",
+        expect.objectContaining({ method: "POST" })
       );
     });
   });
 
-  describe('Storage Box Subaccounts', () => {
-    it('should list subaccounts', async () => {
+  describe("Storage Box Subaccounts", () => {
+    it("should list subaccounts", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve([{ subaccount: { username: 'sub1' } }]),
+        json: () => Promise.resolve([{ subaccount: { username: "sub1" } }]),
       });
 
       await client.listStorageBoxSubaccounts(1);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/storagebox/1/subaccount',
+        "https://robot-ws.your-server.de/storagebox/1/subaccount",
         expect.any(Object)
       );
     });
 
-    it('should update subaccount', async () => {
+    it("should update subaccount", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ subaccount: { username: 'sub1' } }),
+        json: () => Promise.resolve({ subaccount: { username: "sub1" } }),
       });
 
-      await client.updateStorageBoxSubaccount(1, 'sub1', true, true, true, true, false, 'updated');
+      await client.updateStorageBoxSubaccount(
+        1,
+        "sub1",
+        true,
+        true,
+        true,
+        true,
+        false,
+        "updated"
+      );
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/storagebox/1/subaccount/sub1',
-        expect.objectContaining({ method: 'PUT' })
+        "https://robot-ws.your-server.de/storagebox/1/subaccount/sub1",
+        expect.objectContaining({ method: "PUT" })
       );
     });
 
-    it('should delete subaccount', async () => {
+    it("should delete subaccount", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 204,
       });
 
-      await client.deleteStorageBoxSubaccount(1, 'sub1');
+      await client.deleteStorageBoxSubaccount(1, "sub1");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/storagebox/1/subaccount/sub1',
-        expect.objectContaining({ method: 'DELETE' })
+        "https://robot-ws.your-server.de/storagebox/1/subaccount/sub1",
+        expect.objectContaining({ method: "DELETE" })
       );
     });
 
-    it('should reset subaccount password', async () => {
+    it("should reset subaccount password", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ password: 'new-pass' }),
+        json: () => Promise.resolve({ password: "new-pass" }),
       });
 
-      const result = await client.resetStorageBoxSubaccountPassword(1, 'sub1');
+      const result = await client.resetStorageBoxSubaccountPassword(1, "sub1");
 
-      expect(result.password).toBe('new-pass');
+      expect(result.password).toBe("new-pass");
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/storagebox/1/subaccount/sub1/password',
-        expect.objectContaining({ method: 'POST' })
+        "https://robot-ws.your-server.de/storagebox/1/subaccount/sub1/password",
+        expect.objectContaining({ method: "POST" })
       );
     });
   });
 
-  describe('Additional Boot Methods', () => {
-    it('should get rescue config', async () => {
+  describe("Additional Boot Methods", () => {
+    it("should get rescue config", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -1243,12 +1304,12 @@ describe('HetznerRobotClient', () => {
       await client.getRescue(123);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/boot/123/rescue',
+        "https://robot-ws.your-server.de/boot/123/rescue",
         expect.any(Object)
       );
     });
 
-    it('should get linux config', async () => {
+    it("should get linux config", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -1258,27 +1319,27 @@ describe('HetznerRobotClient', () => {
       await client.getLinux(123);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/boot/123/linux',
+        "https://robot-ws.your-server.de/boot/123/linux",
         expect.any(Object)
       );
     });
 
-    it('should get last linux config', async () => {
+    it("should get last linux config", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ linux: { password: 'old-pass' } }),
+        json: () => Promise.resolve({ linux: { password: "old-pass" } }),
       });
 
       await client.getLastLinux(123);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/boot/123/linux/last',
+        "https://robot-ws.your-server.de/boot/123/linux/last",
         expect.any(Object)
       );
     });
 
-    it('should get vnc config', async () => {
+    it("should get vnc config", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -1288,12 +1349,12 @@ describe('HetznerRobotClient', () => {
       await client.getVnc(123);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/boot/123/vnc',
+        "https://robot-ws.your-server.de/boot/123/vnc",
         expect.any(Object)
       );
     });
 
-    it('should deactivate vnc', async () => {
+    it("should deactivate vnc", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -1303,12 +1364,12 @@ describe('HetznerRobotClient', () => {
       await client.deactivateVnc(123);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/boot/123/vnc',
-        expect.objectContaining({ method: 'DELETE' })
+        "https://robot-ws.your-server.de/boot/123/vnc",
+        expect.objectContaining({ method: "DELETE" })
       );
     });
 
-    it('should get windows config', async () => {
+    it("should get windows config", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -1318,12 +1379,12 @@ describe('HetznerRobotClient', () => {
       await client.getWindows(123);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/boot/123/windows',
+        "https://robot-ws.your-server.de/boot/123/windows",
         expect.any(Object)
       );
     });
 
-    it('should deactivate windows', async () => {
+    it("should deactivate windows", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -1333,77 +1394,78 @@ describe('HetznerRobotClient', () => {
       await client.deactivateWindows(123);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/boot/123/windows',
-        expect.objectContaining({ method: 'DELETE' })
+        "https://robot-ws.your-server.de/boot/123/windows",
+        expect.objectContaining({ method: "DELETE" })
       );
     });
   });
 
-  describe('Additional Firewall Methods', () => {
-    it('should update firewall template', async () => {
+  describe("Additional Firewall Methods", () => {
+    it("should update firewall template", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: () => Promise.resolve({ firewall_template: { id: 1 } }),
       });
 
-      await client.updateFirewallTemplate(1, 'new-name', true, false, false);
+      await client.updateFirewallTemplate(1, "new-name", true, false, false);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/firewall/template/1',
-        expect.objectContaining({ method: 'POST' })
+        "https://robot-ws.your-server.de/firewall/template/1",
+        expect.objectContaining({ method: "POST" })
       );
     });
   });
 
-  describe('IP Cancellation', () => {
-    it('should get IP MAC', async () => {
+  describe("IP Cancellation", () => {
+    it("should get IP MAC", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ mac: { ip: '1.2.3.4', mac: 'aa:bb:cc:dd:ee:ff' } }),
+        json: () =>
+          Promise.resolve({ mac: { ip: "1.2.3.4", mac: "aa:bb:cc:dd:ee:ff" } }),
       });
 
-      await client.getIpMac('1.2.3.4');
+      await client.getIpMac("1.2.3.4");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/ip/1.2.3.4/mac',
+        "https://robot-ws.your-server.de/ip/1.2.3.4/mac",
         expect.any(Object)
       );
     });
 
-    it('should get subnet MAC', async () => {
+    it("should get subnet MAC", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ mac: { mac: 'aa:bb:cc:dd:ee:ff' } }),
+        json: () => Promise.resolve({ mac: { mac: "aa:bb:cc:dd:ee:ff" } }),
       });
 
-      await client.getSubnetMac('10.0.0.0');
+      await client.getSubnetMac("10.0.0.0");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/subnet/10.0.0.0/mac',
+        "https://robot-ws.your-server.de/subnet/10.0.0.0/mac",
         expect.any(Object)
       );
     });
 
-    it('should delete subnet MAC', async () => {
+    it("should delete subnet MAC", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 204,
       });
 
-      await client.deleteSubnetMac('10.0.0.0');
+      await client.deleteSubnetMac("10.0.0.0");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/subnet/10.0.0.0/mac',
-        expect.objectContaining({ method: 'DELETE' })
+        "https://robot-ws.your-server.de/subnet/10.0.0.0/mac",
+        expect.objectContaining({ method: "DELETE" })
       );
     });
   });
 
-  describe('encodeParams edge cases', () => {
-    it('should handle undefined values by skipping them', async () => {
+  describe("encodeParams edge cases", () => {
+    it("should handle undefined values by skipping them", async () => {
       // updateVSwitch with only name (vlan undefined) triggers encodeParams with undefined
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -1411,18 +1473,18 @@ describe('HetznerRobotClient', () => {
         json: () => Promise.resolve({ vswitch: { id: 1 } }),
       });
 
-      await client.updateVSwitch(1, 'test-name');
+      await client.updateVSwitch(1, "test-name");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/vswitch/1',
+        "https://robot-ws.your-server.de/vswitch/1",
         expect.objectContaining({
-          method: 'POST',
-          body: 'name=test-name',
+          method: "POST",
+          body: "name=test-name",
         })
       );
     });
 
-    it('should handle boolean values by converting to string', async () => {
+    it("should handle boolean values by converting to string", async () => {
       // createFirewallTemplate passes boolean params (filter_ipv6, whitelist_hos, is_default)
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -1430,16 +1492,16 @@ describe('HetznerRobotClient', () => {
         json: () => Promise.resolve({ firewall_template: { id: 2 } }),
       });
 
-      await client.createFirewallTemplate('bool-test', false, true, false);
+      await client.createFirewallTemplate("bool-test", false, true, false);
 
       const call = mockFetch.mock.calls[0] as [string, RequestInit];
       const body = call[1].body as string;
-      expect(body).toContain('filter_ipv6=false');
-      expect(body).toContain('whitelist_hos=true');
-      expect(body).toContain('is_default=false');
+      expect(body).toContain("filter_ipv6=false");
+      expect(body).toContain("whitelist_hos=true");
+      expect(body).toContain("is_default=false");
     });
 
-    it('should handle array values by encoding each with [] suffix', async () => {
+    it("should handle array values by encoding each with [] suffix", async () => {
       // getTraffic with multiple IPs triggers the array branch
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -1447,72 +1509,94 @@ describe('HetznerRobotClient', () => {
         json: () => Promise.resolve({ traffic: { data: [] } }),
       });
 
-      await client.getTraffic(['1.2.3.4', '5.6.7.8'], [], '2024-01-01', '2024-01-31', 'month');
+      await client.getTraffic(
+        ["1.2.3.4", "5.6.7.8"],
+        [],
+        "2024-01-01",
+        "2024-01-31",
+        "month"
+      );
 
       const call = mockFetch.mock.calls[0] as [string, RequestInit];
       const body = call[1].body as string;
-      expect(body).toContain('ip[]=1.2.3.4');
-      expect(body).toContain('ip[]=5.6.7.8');
+      expect(body).toContain("ip[]=1.2.3.4");
+      expect(body).toContain("ip[]=5.6.7.8");
     });
   });
 
-  describe('error handling edge cases', () => {
-    it('should handle error response with missing code', async () => {
+  describe("error handling edge cases", () => {
+    it("should handle error response with missing code", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 403,
-        statusText: 'Forbidden',
-        json: () => Promise.resolve({ error: { message: 'Access denied' } }),
+        statusText: "Forbidden",
+        json: () => Promise.resolve({ error: { message: "Access denied" } }),
       });
 
-      await expect(client.listServers()).rejects.toThrow('ERROR: Access denied');
+      await expect(client.listServers()).rejects.toThrow(
+        "ERROR: Access denied"
+      );
     });
 
-    it('should handle error response with no error object', async () => {
+    it("should handle error response with no error object", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 400,
-        statusText: 'Bad Request',
-        json: () => Promise.resolve({ some_other_field: 'value' }),
+        statusText: "Bad Request",
+        json: () => Promise.resolve({ some_other_field: "value" }),
       });
 
-      await expect(client.listServers()).rejects.toThrow('HTTP 400: Bad Request');
+      await expect(client.listServers()).rejects.toThrow(
+        "HTTP 400: Bad Request"
+      );
     });
 
-    it('should handle error response with missing message', async () => {
+    it("should handle error response with missing message", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 403,
-        statusText: 'Forbidden',
-        json: () => Promise.resolve({ error: { code: 'FORBIDDEN' } }),
+        statusText: "Forbidden",
+        json: () => Promise.resolve({ error: { code: "FORBIDDEN" } }),
       });
 
-      await expect(client.listServers()).rejects.toThrow('FORBIDDEN: Unknown error');
+      await expect(client.listServers()).rejects.toThrow(
+        "FORBIDDEN: Unknown error"
+      );
     });
   });
 
-  describe('SSH Keys - getSshKey', () => {
-    it('should get SSH key by fingerprint', async () => {
-      const mockKey = { key: { fingerprint: 'ab:cd:ef:12:34', name: 'my-key', type: 'RSA', size: 4096, data: 'ssh-rsa AAAA...' } };
+  describe("SSH Keys - getSshKey", () => {
+    it("should get SSH key by fingerprint", async () => {
+      const mockKey = {
+        key: {
+          fingerprint: "ab:cd:ef:12:34",
+          name: "my-key",
+          type: "RSA",
+          size: 4096,
+          data: "ssh-rsa AAAA...",
+        },
+      };
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: () => Promise.resolve(mockKey),
       });
 
-      const result = await client.getSshKey('ab:cd:ef:12:34');
+      const result = await client.getSshKey("ab:cd:ef:12:34");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/key/ab:cd:ef:12:34',
+        "https://robot-ws.your-server.de/key/ab:cd:ef:12:34",
         expect.any(Object)
       );
       expect(result).toEqual(mockKey);
     });
   });
 
-  describe('Firewall Templates - additional coverage', () => {
-    it('should get firewall template by ID', async () => {
-      const mockTemplate = { firewall_template: { id: 5, name: 'test-template' } };
+  describe("Firewall Templates - additional coverage", () => {
+    it("should get firewall template by ID", async () => {
+      const mockTemplate = {
+        firewall_template: { id: 5, name: "test-template" },
+      };
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -1522,71 +1606,128 @@ describe('HetznerRobotClient', () => {
       const result = await client.getFirewallTemplate(5);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/firewall/template/5',
+        "https://robot-ws.your-server.de/firewall/template/5",
         expect.any(Object)
       );
       expect(result).toEqual(mockTemplate);
     });
 
-    it('should create firewall template with rules', async () => {
+    it("should create firewall template with rules", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: () => Promise.resolve({ firewall_template: { id: 2 } }),
       });
 
-      const rules = { input: [{ ip_version: 'ipv4', name: 'Allow SSH', dst_ip: null, dst_port: '22', src_ip: null, src_port: null, action: 'accept' as const, protocol: 'tcp', tcp_flags: null }] };
-      await client.createFirewallTemplate('with-rules', true, false, true, rules);
+      const rules = {
+        input: [
+          {
+            ip_version: "ipv4",
+            name: "Allow SSH",
+            dst_ip: null,
+            dst_port: "22",
+            src_ip: null,
+            src_port: null,
+            action: "accept" as const,
+            protocol: "tcp",
+            tcp_flags: null,
+          },
+        ],
+      };
+      await client.createFirewallTemplate(
+        "with-rules",
+        true,
+        false,
+        true,
+        rules
+      );
 
       const call = mockFetch.mock.calls[0] as [string, RequestInit];
       const body = call[1].body as string;
-      expect(body).toContain('name=with-rules');
-      expect(body).toContain('rules%5Binput%5D=');
+      expect(body).toContain("name=with-rules");
+      expect(body).toContain("rules%5Binput%5D=");
       expect(body).toContain(encodeURIComponent(JSON.stringify(rules.input)));
     });
 
-    it('should update firewall template with rules', async () => {
+    it("should update firewall template with rules", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: () => Promise.resolve({ firewall_template: { id: 1 } }),
       });
 
-      const rules = { input: [{ ip_version: 'ipv4', name: 'Allow HTTP', dst_ip: null, dst_port: '80', src_ip: null, src_port: null, action: 'accept' as const, protocol: 'tcp', tcp_flags: null }] };
-      await client.updateFirewallTemplate(1, 'updated-name', true, false, false, rules);
+      const rules = {
+        input: [
+          {
+            ip_version: "ipv4",
+            name: "Allow HTTP",
+            dst_ip: null,
+            dst_port: "80",
+            src_ip: null,
+            src_port: null,
+            action: "accept" as const,
+            protocol: "tcp",
+            tcp_flags: null,
+          },
+        ],
+      };
+      await client.updateFirewallTemplate(
+        1,
+        "updated-name",
+        true,
+        false,
+        false,
+        rules
+      );
 
       const call = mockFetch.mock.calls[0] as [string, RequestInit];
       const body = call[1].body as string;
-      expect(body).toContain('name=updated-name');
-      expect(body).toContain('rules%5Binput%5D=');
+      expect(body).toContain("name=updated-name");
+      expect(body).toContain("rules%5Binput%5D=");
       expect(body).toContain(encodeURIComponent(JSON.stringify(rules.input)));
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/firewall/template/1',
-        expect.objectContaining({ method: 'POST' })
+        "https://robot-ws.your-server.de/firewall/template/1",
+        expect.objectContaining({ method: "POST" })
       );
     });
 
-    it('should update firewall with rules', async () => {
+    it("should update firewall with rules", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ firewall: { status: 'active' } }),
+        json: () => Promise.resolve({ firewall: { status: "active" } }),
       });
 
-      const rules = { input: [{ ip_version: 'ipv4', name: 'Allow HTTPS', dst_ip: null, dst_port: '443', src_ip: null, src_port: null, action: 'accept' as const, protocol: 'tcp', tcp_flags: null }] };
-      await client.updateFirewall(123, 'active', rules);
+      const rules = {
+        input: [
+          {
+            ip_version: "ipv4",
+            name: "Allow HTTPS",
+            dst_ip: null,
+            dst_port: "443",
+            src_ip: null,
+            src_port: null,
+            action: "accept" as const,
+            protocol: "tcp",
+            tcp_flags: null,
+          },
+        ],
+      };
+      await client.updateFirewall(123, "active", rules);
 
       const call = mockFetch.mock.calls[0] as [string, RequestInit];
       const body = call[1].body as string;
-      expect(body).toContain('status=active');
-      expect(body).toContain('rules%5Binput%5D=');
+      expect(body).toContain("status=active");
+      expect(body).toContain("rules%5Binput%5D=");
       expect(body).toContain(encodeURIComponent(JSON.stringify(rules.input)));
     });
   });
 
-  describe('vSwitch - additional coverage', () => {
-    it('should get vSwitch by ID', async () => {
-      const mockVSwitch = { vswitch: { id: 42, name: 'my-vswitch', vlan: 4000 } };
+  describe("vSwitch - additional coverage", () => {
+    it("should get vSwitch by ID", async () => {
+      const mockVSwitch = {
+        vswitch: { id: 42, name: "my-vswitch", vlan: 4000 },
+      };
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -1596,33 +1737,40 @@ describe('HetznerRobotClient', () => {
       const result = await client.getVSwitch(42);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/vswitch/42',
+        "https://robot-ws.your-server.de/vswitch/42",
         expect.any(Object)
       );
       expect(result).toEqual(mockVSwitch);
     });
 
-    it('should delete vSwitch with cancellation date', async () => {
+    it("should delete vSwitch with cancellation date", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 204,
       });
 
-      await client.deleteVSwitch(1, '2025-12-31');
+      await client.deleteVSwitch(1, "2025-12-31");
 
       const call = mockFetch.mock.calls[0] as [string, RequestInit];
       const body = call[1].body as string;
-      expect(body).toContain('cancellation_date=2025-12-31');
+      expect(body).toContain("cancellation_date=2025-12-31");
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/vswitch/1',
-        expect.objectContaining({ method: 'DELETE' })
+        "https://robot-ws.your-server.de/vswitch/1",
+        expect.objectContaining({ method: "DELETE" })
       );
     });
   });
 
-  describe('Storage Box - additional coverage', () => {
-    it('should get storage box by ID', async () => {
-      const mockBox = { storagebox: { id: 10, name: 'my-box', login: 'u12345', product: 'BX11' } };
+  describe("Storage Box - additional coverage", () => {
+    it("should get storage box by ID", async () => {
+      const mockBox = {
+        storagebox: {
+          id: 10,
+          name: "my-box",
+          login: "u12345",
+          product: "BX11",
+        },
+      };
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -1632,78 +1780,80 @@ describe('HetznerRobotClient', () => {
       const result = await client.getStorageBox(10);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/storagebox/10',
+        "https://robot-ws.your-server.de/storagebox/10",
         expect.any(Object)
       );
       expect(result).toEqual(mockBox);
     });
   });
 
-  describe('Server Transactions - additional coverage', () => {
-    it('should get server transaction by ID', async () => {
-      const mockTransaction = { transaction: { id: 'TX-123', product_id: 'AX41', status: 'ready' } };
+  describe("Server Transactions - additional coverage", () => {
+    it("should get server transaction by ID", async () => {
+      const mockTransaction = {
+        transaction: { id: "TX-123", product_id: "AX41", status: "ready" },
+      };
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: () => Promise.resolve(mockTransaction),
       });
 
-      const result = await client.getServerTransaction('TX-123');
+      const result = await client.getServerTransaction("TX-123");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/order/server/transaction/TX-123',
+        "https://robot-ws.your-server.de/order/server/transaction/TX-123",
         expect.any(Object)
       );
       expect(result).toEqual(mockTransaction);
     });
   });
 
-  describe('Optional parameter branches', () => {
-    it('should get traffic with empty IPs and subnets', async () => {
+  describe("Optional parameter branches", () => {
+    it("should get traffic with empty IPs and subnets", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: () => Promise.resolve({ traffic: { data: [] } }),
       });
 
-      await client.getTraffic([], [], '2024-01-01', '2024-01-31', 'month');
+      await client.getTraffic([], [], "2024-01-01", "2024-01-31", "month");
 
       const call = mockFetch.mock.calls[0] as [string, RequestInit];
       const body = call[1].body as string;
-      expect(body).not.toContain('ip');
-      expect(body).not.toContain('subnet');
-      expect(body).toContain('type=month');
+      expect(body).not.toContain("ip");
+      expect(body).not.toContain("subnet");
+      expect(body).toContain("type=month");
     });
 
-    it('should order server without optional params', async () => {
+    it("should order server without optional params", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ transaction: { id: 'TX-2' } }),
+        json: () => Promise.resolve({ transaction: { id: "TX-2" } }),
       });
 
-      await client.orderServer('AX41');
+      await client.orderServer("AX41");
 
       const call = mockFetch.mock.calls[0] as [string, RequestInit];
       const body = call[1].body as string;
-      expect(body).toBe('product_id=AX41');
+      expect(body).toBe("product_id=AX41");
     });
 
-    it('should order server market without optional params', async () => {
+    it("should order server market without optional params", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ transaction: { id: 'TX-3' } }),
+        json: () => Promise.resolve({ transaction: { id: "TX-3" } }),
       });
 
-      await client.orderServerMarket(12345);
+      await client.orderServerMarket(12_345);
 
       const call = mockFetch.mock.calls[0] as [string, RequestInit];
       const body = call[1].body as string;
-      expect(body).toBe('product_id=12345');
+      expect(body).toBe("product_id=12345");
     });
 
-    it('should update storage box with no optional params', async () => {
+    it("should update storage box with no optional params", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -1714,52 +1864,52 @@ describe('HetznerRobotClient', () => {
 
       const call = mockFetch.mock.calls[0] as [string, RequestInit];
       const body = call[1].body as string;
-      expect(body).toBe('');
+      expect(body).toBe("");
     });
 
-    it('should create storage box subaccount with minimal params', async () => {
+    it("should create storage box subaccount with minimal params", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ subaccount: { username: 'sub1' } }),
+        json: () => Promise.resolve({ subaccount: { username: "sub1" } }),
       });
 
-      await client.createStorageBoxSubaccount(1, '/home/user');
+      await client.createStorageBoxSubaccount(1, "/home/user");
 
       const call = mockFetch.mock.calls[0] as [string, RequestInit];
       const body = call[1].body as string;
-      expect(body).toBe('homedirectory=%2Fhome%2Fuser');
+      expect(body).toBe("homedirectory=%2Fhome%2Fuser");
     });
 
-    it('should update storage box subaccount with no optional params', async () => {
+    it("should update storage box subaccount with no optional params", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ subaccount: { username: 'sub1' } }),
+        json: () => Promise.resolve({ subaccount: { username: "sub1" } }),
       });
 
-      await client.updateStorageBoxSubaccount(1, 'sub1');
+      await client.updateStorageBoxSubaccount(1, "sub1");
 
       const call = mockFetch.mock.calls[0] as [string, RequestInit];
       const body = call[1].body as string;
-      expect(body).toBe('');
+      expect(body).toBe("");
     });
 
-    it('should update snapshot plan with only status', async () => {
+    it("should update snapshot plan with only status", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ snapshotplan: { status: 'disabled' } }),
+        json: () => Promise.resolve({ snapshotplan: { status: "disabled" } }),
       });
 
-      await client.updateStorageBoxSnapshotPlan(1, 'disabled');
+      await client.updateStorageBoxSnapshotPlan(1, "disabled");
 
       const call = mockFetch.mock.calls[0] as [string, RequestInit];
       const body = call[1].body as string;
-      expect(body).toBe('status=disabled');
+      expect(body).toBe("status=disabled");
     });
 
-    it('should cancel server without optional params', async () => {
+    it("should cancel server without optional params", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -1770,94 +1920,94 @@ describe('HetznerRobotClient', () => {
 
       const call = mockFetch.mock.calls[0] as [string, RequestInit];
       const body = call[1].body as string;
-      expect(body).toBe('');
+      expect(body).toBe("");
     });
 
-    it('should activate rescue without optional params', async () => {
+    it("should activate rescue without optional params", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: () => Promise.resolve({ rescue: { active: true } }),
       });
 
-      await client.activateRescue(123, 'linux');
+      await client.activateRescue(123, "linux");
 
       const call = mockFetch.mock.calls[0] as [string, RequestInit];
       const body = call[1].body as string;
-      expect(body).toBe('os=linux');
+      expect(body).toBe("os=linux");
     });
 
-    it('should activate linux without optional params', async () => {
+    it("should activate linux without optional params", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: () => Promise.resolve({ linux: { active: true } }),
       });
 
-      await client.activateLinux(123, 'Debian-12');
+      await client.activateLinux(123, "Debian-12");
 
       const call = mockFetch.mock.calls[0] as [string, RequestInit];
       const body = call[1].body as string;
-      expect(body).toBe('dist=Debian-12');
+      expect(body).toBe("dist=Debian-12");
     });
 
-    it('should activate vnc without optional params', async () => {
+    it("should activate vnc without optional params", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: () => Promise.resolve({ vnc: { active: true } }),
       });
 
-      await client.activateVnc(123, 'Debian-12');
+      await client.activateVnc(123, "Debian-12");
 
       const call = mockFetch.mock.calls[0] as [string, RequestInit];
       const body = call[1].body as string;
-      expect(body).toBe('dist=Debian-12');
+      expect(body).toBe("dist=Debian-12");
     });
 
-    it('should activate windows without optional lang', async () => {
+    it("should activate windows without optional lang", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: () => Promise.resolve({ windows: { active: true } }),
       });
 
-      await client.activateWindows(123, 'standard');
+      await client.activateWindows(123, "standard");
 
       const call = mockFetch.mock.calls[0] as [string, RequestInit];
       const body = call[1].body as string;
-      expect(body).toBe('dist=standard');
+      expect(body).toBe("dist=standard");
     });
 
-    it('should update firewall without rules', async () => {
+    it("should update firewall without rules", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ firewall: { status: 'disabled' } }),
+        json: () => Promise.resolve({ firewall: { status: "disabled" } }),
       });
 
-      await client.updateFirewall(123, 'disabled');
+      await client.updateFirewall(123, "disabled");
 
       const call = mockFetch.mock.calls[0] as [string, RequestInit];
       const body = call[1].body as string;
-      expect(body).toBe('status=disabled');
+      expect(body).toBe("status=disabled");
     });
 
-    it('should create firewall template without optional params', async () => {
+    it("should create firewall template without optional params", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: () => Promise.resolve({ firewall_template: { id: 3 } }),
       });
 
-      await client.createFirewallTemplate('minimal-template');
+      await client.createFirewallTemplate("minimal-template");
 
       const call = mockFetch.mock.calls[0] as [string, RequestInit];
       const body = call[1].body as string;
-      expect(body).toBe('name=minimal-template');
+      expect(body).toBe("name=minimal-template");
     });
 
-    it('should update firewall template without optional params', async () => {
+    it("should update firewall template without optional params", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -1868,10 +2018,10 @@ describe('HetznerRobotClient', () => {
 
       const call = mockFetch.mock.calls[0] as [string, RequestInit];
       const body = call[1].body as string;
-      expect(body).toBe('');
+      expect(body).toBe("");
     });
 
-    it('should update vSwitch without optional params', async () => {
+    it("should update vSwitch without optional params", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -1882,10 +2032,10 @@ describe('HetznerRobotClient', () => {
 
       const call = mockFetch.mock.calls[0] as [string, RequestInit];
       const body = call[1].body as string;
-      expect(body).toBe('');
+      expect(body).toBe("");
     });
 
-    it('should delete vSwitch without cancellation date', async () => {
+    it("should delete vSwitch without cancellation date", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 204,
@@ -1895,82 +2045,83 @@ describe('HetznerRobotClient', () => {
 
       const call = mockFetch.mock.calls[0] as [string, RequestInit];
       const body = call[1].body as string;
-      expect(body).toBe('');
+      expect(body).toBe("");
     });
 
-    it('should update IP without optional traffic params', async () => {
+    it("should update IP without optional traffic params", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ ip: { ip: '1.2.3.4' } }),
+        json: () => Promise.resolve({ ip: { ip: "1.2.3.4" } }),
       });
 
-      await client.updateIp('1.2.3.4');
+      await client.updateIp("1.2.3.4");
 
       const call = mockFetch.mock.calls[0] as [string, RequestInit];
       const body = call[1].body as string;
-      expect(body).toBe('');
+      expect(body).toBe("");
     });
 
-    it('should update subnet without optional traffic params', async () => {
+    it("should update subnet without optional traffic params", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: () => Promise.resolve({ subnet: {} }),
       });
 
-      await client.updateSubnet('10.0.0.0');
+      await client.updateSubnet("10.0.0.0");
 
       const call = mockFetch.mock.calls[0] as [string, RequestInit];
       const body = call[1].body as string;
-      expect(body).toBe('');
+      expect(body).toBe("");
     });
   });
 
-  describe('Failover Additional Methods', () => {
-    it('should get failover', async () => {
+  describe("Failover Additional Methods", () => {
+    it("should get failover", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ failover: { ip: '1.2.3.4' } }),
+        json: () => Promise.resolve({ failover: { ip: "1.2.3.4" } }),
       });
 
-      await client.getFailover('1.2.3.4');
+      await client.getFailover("1.2.3.4");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/failover/1.2.3.4',
+        "https://robot-ws.your-server.de/failover/1.2.3.4",
         expect.any(Object)
       );
     });
   });
 
-  describe('RDNS Additional Methods', () => {
-    it('should get RDNS', async () => {
+  describe("RDNS Additional Methods", () => {
+    it("should get RDNS", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ rdns: { ip: '1.2.3.4', ptr: 'host.com' } }),
+        json: () =>
+          Promise.resolve({ rdns: { ip: "1.2.3.4", ptr: "host.com" } }),
       });
 
-      await client.getRdns('1.2.3.4');
+      await client.getRdns("1.2.3.4");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/rdns/1.2.3.4',
+        "https://robot-ws.your-server.de/rdns/1.2.3.4",
         expect.any(Object)
       );
     });
 
-    it('should delete RDNS', async () => {
+    it("should delete RDNS", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 204,
       });
 
-      await client.deleteRdns('1.2.3.4');
+      await client.deleteRdns("1.2.3.4");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://robot-ws.your-server.de/rdns/1.2.3.4',
-        expect.objectContaining({ method: 'DELETE' })
+        "https://robot-ws.your-server.de/rdns/1.2.3.4",
+        expect.objectContaining({ method: "DELETE" })
       );
     });
   });

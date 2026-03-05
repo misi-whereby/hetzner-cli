@@ -1,31 +1,34 @@
 export interface CloudServer {
-  id: number;
-  name: string;
-  status: string;
-  server_type: string;
+  created: string;
   datacenter: string;
+  id: number;
+  image: string;
+  labels: Record<string, string>;
+  load_balancers: number[];
+  name: string;
+  private_ip: string | null;
   public_ipv4: string;
   public_ipv6: string;
-  private_ip: string | null;
-  image: string;
-  created: string;
-  labels: Record<string, string>;
+  server_type: string;
+  status: string;
   volumes: number[];
-  load_balancers: number[];
 }
 
 export interface CloudNetwork {
-  id: number;
-  name: string;
-  ip_range: string;
-  subnets: { type: string; ip_range: string; network_zone: string }[];
-  servers: number[];
   created: string;
+  id: number;
+  ip_range: string;
   labels: Record<string, string>;
+  name: string;
+  servers: number[];
+  subnets: { type: string; ip_range: string; network_zone: string }[];
 }
 
 export interface CloudFirewall {
+  applied_to: { type: string; server: { id: number } }[];
+  created: string;
   id: number;
+  labels: Record<string, string>;
   name: string;
   rules: {
     direction: string;
@@ -34,27 +37,24 @@ export interface CloudFirewall {
     source_ips: string[];
     description: string;
   }[];
-  applied_to: { type: string; server: { id: number } }[];
-  created: string;
-  labels: Record<string, string>;
 }
 
 export interface CloudVolume {
-  id: number;
-  name: string;
-  size: number;
-  server: number | null;
-  location: string;
-  format: string;
-  status: string;
   created: string;
+  format: string;
+  id: number;
   labels: Record<string, string>;
   linux_device: string;
+  location: string;
+  name: string;
+  server: number | null;
+  size: number;
+  status: string;
 }
 
 const servers: CloudServer[] = [
   {
-    id: 42917324,
+    id: 42_917_324,
     name: "web-prod-1",
     status: "running",
     server_type: "cpx31",
@@ -65,11 +65,11 @@ const servers: CloudServer[] = [
     image: "ubuntu-22.04",
     created: "2025-03-15T08:23:11+00:00",
     labels: { env: "production", role: "web" },
-    volumes: [18293745],
+    volumes: [18_293_745],
     load_balancers: [],
   },
   {
-    id: 42917389,
+    id: 42_917_389,
     name: "web-prod-2",
     status: "running",
     server_type: "cpx31",
@@ -84,7 +84,7 @@ const servers: CloudServer[] = [
     load_balancers: [],
   },
   {
-    id: 43018456,
+    id: 43_018_456,
     name: "db-prod",
     status: "running",
     server_type: "ccx33",
@@ -95,11 +95,11 @@ const servers: CloudServer[] = [
     image: "ubuntu-22.04",
     created: "2025-04-02T14:11:08+00:00",
     labels: { env: "production", role: "database" },
-    volumes: [18293801, 18293802],
+    volumes: [18_293_801, 18_293_802],
     load_balancers: [],
   },
   {
-    id: 43201778,
+    id: 43_201_778,
     name: "staging-app",
     status: "running",
     server_type: "cx22",
@@ -114,7 +114,7 @@ const servers: CloudServer[] = [
     load_balancers: [],
   },
   {
-    id: 43405112,
+    id: 43_405_112,
     name: "ci-runner",
     status: "off",
     server_type: "cx11",
@@ -132,25 +132,25 @@ const servers: CloudServer[] = [
 
 const networks: CloudNetwork[] = [
   {
-    id: 2847391,
+    id: 2_847_391,
     name: "prod-network",
     ip_range: "10.0.0.0/16",
     subnets: [
       { type: "cloud", ip_range: "10.0.0.0/24", network_zone: "eu-central" },
       { type: "cloud", ip_range: "10.0.1.0/24", network_zone: "eu-central" },
     ],
-    servers: [42917324, 42917389, 43018456],
+    servers: [42_917_324, 42_917_389, 43_018_456],
     created: "2025-03-14T12:00:00+00:00",
     labels: { env: "production" },
   },
   {
-    id: 2847452,
+    id: 2_847_452,
     name: "staging-network",
     ip_range: "10.0.0.0/16",
     subnets: [
       { type: "cloud", ip_range: "10.0.1.0/24", network_zone: "eu-central" },
     ],
-    servers: [43201778],
+    servers: [43_201_778],
     created: "2025-06-10T09:40:00+00:00",
     labels: { env: "staging" },
   },
@@ -158,7 +158,7 @@ const networks: CloudNetwork[] = [
 
 const firewalls: CloudFirewall[] = [
   {
-    id: 891234,
+    id: 891_234,
     name: "web-firewall",
     rules: [
       {
@@ -184,14 +184,14 @@ const firewalls: CloudFirewall[] = [
       },
     ],
     applied_to: [
-      { type: "server", server: { id: 42917324 } },
-      { type: "server", server: { id: 42917389 } },
+      { type: "server", server: { id: 42_917_324 } },
+      { type: "server", server: { id: 42_917_389 } },
     ],
     created: "2025-03-15T08:20:00+00:00",
     labels: { env: "production" },
   },
   {
-    id: 891298,
+    id: 891_298,
     name: "db-firewall",
     rules: [
       {
@@ -209,7 +209,7 @@ const firewalls: CloudFirewall[] = [
         description: "Allow SSH from office",
       },
     ],
-    applied_to: [{ type: "server", server: { id: 43018456 } }],
+    applied_to: [{ type: "server", server: { id: 43_018_456 } }],
     created: "2025-04-02T14:10:00+00:00",
     labels: { env: "production" },
   },
@@ -217,10 +217,10 @@ const firewalls: CloudFirewall[] = [
 
 const volumes: CloudVolume[] = [
   {
-    id: 18293745,
+    id: 18_293_745,
     name: "web-assets",
     size: 50,
-    server: 42917324,
+    server: 42_917_324,
     location: "fsn1",
     format: "ext4",
     status: "available",
@@ -229,10 +229,10 @@ const volumes: CloudVolume[] = [
     linux_device: "/dev/disk/by-id/scsi-0HC_Volume_18293745",
   },
   {
-    id: 18293801,
+    id: 18_293_801,
     name: "db-data",
     size: 200,
-    server: 43018456,
+    server: 43_018_456,
     location: "fsn1",
     format: "ext4",
     status: "available",
@@ -241,10 +241,10 @@ const volumes: CloudVolume[] = [
     linux_device: "/dev/disk/by-id/scsi-0HC_Volume_18293801",
   },
   {
-    id: 18293802,
+    id: 18_293_802,
     name: "db-backup",
     size: 500,
-    server: 43018456,
+    server: 43_018_456,
     location: "fsn1",
     format: "xfs",
     status: "available",
@@ -261,8 +261,10 @@ export function getCloudServers(): CloudServer[] {
 export function getCloudServerByNameOrId(
   nameOrId: string
 ): CloudServer | undefined {
-  const id = parseInt(nameOrId, 10);
-  if (!isNaN(id)) return servers.find((s) => s.id === id);
+  const id = Number.parseInt(nameOrId, 10);
+  if (!Number.isNaN(id)) {
+    return servers.find((s) => s.id === id);
+  }
   return servers.find((s) => s.name === nameOrId);
 }
 

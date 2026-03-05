@@ -972,144 +972,144 @@ export const outputSchemas: Record<string, string> = {
   // ==================== Robot API ====================
 
   // --- server ---
-  'server list': `${ROBOT_SERVER}\n\ntype Output = { server: Server }[];`,
-  'server get':  `${ROBOT_SERVER_DETAILS}\n\ntype Output = ServerDetails;`,
+  "server list": `${ROBOT_SERVER}\n\ntype Output = { server: Server }[];`,
+  "server get": `${ROBOT_SERVER_DETAILS}\n\ntype Output = ServerDetails;`,
 
   // --- reset ---
-  'reset options': `${ROBOT_RESET}\n\ntype Output = { reset: Reset }[] | Reset;`,
+  "reset options": `${ROBOT_RESET}\n\ntype Output = { reset: Reset }[] | Reset;`,
 
   // --- boot ---
-  'boot status':            `${ROBOT_BOOT_CONFIG}\n\ntype Output = BootConfig;`,
-  'boot rescue last':       `${ROBOT_RESCUE_CONFIG}\n\ntype Output = RescueConfig;`,
-  'boot linux options':     `${ROBOT_LINUX_CONFIG}\n\ntype Output = LinuxConfig;`,
+  "boot status": `${ROBOT_BOOT_CONFIG}\n\ntype Output = BootConfig;`,
+  "boot rescue last": `${ROBOT_RESCUE_CONFIG}\n\ntype Output = RescueConfig;`,
+  "boot linux options": `${ROBOT_LINUX_CONFIG}\n\ntype Output = LinuxConfig;`,
 
   // --- ip ---
-  'ip list': `${ROBOT_IP}\n\ntype Output = { ip: IP }[];`,
-  'ip get':  `${ROBOT_IP}\n\ntype Output = IP;`,
+  "ip list": `${ROBOT_IP}\n\ntype Output = { ip: IP }[];`,
+  "ip get": `${ROBOT_IP}\n\ntype Output = IP;`,
 
   // --- ip mac ---
-  'ip mac get': `${ROBOT_MAC}\n\ntype Output = Mac;`,
+  "ip mac get": `${ROBOT_MAC}\n\ntype Output = Mac;`,
 
   // --- subnet ---
-  'subnet list': `${ROBOT_SUBNET}\n\ntype Output = { subnet: Subnet }[];`,
-  'subnet get':  `${ROBOT_SUBNET}\n\ntype Output = { subnet: Subnet }[];`,
+  "subnet list": `${ROBOT_SUBNET}\n\ntype Output = { subnet: Subnet }[];`,
+  "subnet get": `${ROBOT_SUBNET}\n\ntype Output = { subnet: Subnet }[];`,
 
   // --- failover ---
-  'failover list': `${ROBOT_FAILOVER}\n\ntype Output = { failover: Failover }[];`,
-  'failover get':  `${ROBOT_FAILOVER}\n\ntype Output = { failover: Failover }[];`,
+  "failover list": `${ROBOT_FAILOVER}\n\ntype Output = { failover: Failover }[];`,
+  "failover get": `${ROBOT_FAILOVER}\n\ntype Output = { failover: Failover }[];`,
 
   // --- rdns ---
-  'rdns list': `${ROBOT_RDNS}\n\ntype Output = { rdns: Rdns }[];`,
-  'rdns get':  `${ROBOT_RDNS}\n\ntype Output = Rdns;`,
+  "rdns list": `${ROBOT_RDNS}\n\ntype Output = { rdns: Rdns }[];`,
+  "rdns get": `${ROBOT_RDNS}\n\ntype Output = Rdns;`,
 
   // --- key ---
-  'key list': `${ROBOT_SSH_KEY}\n\ntype Output = { key: SshKey }[];`,
-  'key get':  `${ROBOT_SSH_KEY}\n\ntype Output = SshKey;`,
+  "key list": `${ROBOT_SSH_KEY}\n\ntype Output = { key: SshKey }[];`,
+  "key get": `${ROBOT_SSH_KEY}\n\ntype Output = SshKey;`,
 
   // --- firewall ---
-  'firewall get': `${ROBOT_FIREWALL}\n\ntype Output = Firewall;`,
+  "firewall get": `${ROBOT_FIREWALL}\n\ntype Output = Firewall;`,
 
   // --- firewall template ---
-  'firewall template list': `${ROBOT_FIREWALL_TEMPLATE}\n\ntype Output = { firewall_template: FirewallTemplate }[];`,
-  'firewall template get':  `${ROBOT_FIREWALL_TEMPLATE}\n\ntype Output = { firewall_template: FirewallTemplate }[];`,
+  "firewall template list": `${ROBOT_FIREWALL_TEMPLATE}\n\ntype Output = { firewall_template: FirewallTemplate }[];`,
+  "firewall template get": `${ROBOT_FIREWALL_TEMPLATE}\n\ntype Output = { firewall_template: FirewallTemplate }[];`,
 
   // --- vswitch ---
-  'vswitch list': `${ROBOT_VSWITCH}\n\ntype Output = { vswitch: VSwitch }[];`,
-  'vswitch get':  `${ROBOT_VSWITCH}\n\ntype Output = VSwitch;`,
+  "vswitch list": `${ROBOT_VSWITCH}\n\ntype Output = { vswitch: VSwitch }[];`,
+  "vswitch get": `${ROBOT_VSWITCH}\n\ntype Output = VSwitch;`,
 
   // --- storagebox ---
-  'storagebox list': `${ROBOT_STORAGEBOX}\n\ntype Output = { storagebox: StorageBox }[];`,
-  'storagebox get':  `${ROBOT_STORAGEBOX}\n\ntype Output = StorageBox;`,
+  "storagebox list": `${ROBOT_STORAGEBOX}\n\ntype Output = { storagebox: StorageBox }[];`,
+  "storagebox get": `${ROBOT_STORAGEBOX}\n\ntype Output = StorageBox;`,
 
   // --- storagebox snapshot ---
-  'storagebox snapshot list': `${ROBOT_STORAGEBOX_SNAPSHOT}\n\ntype Output = { snapshot: StorageBoxSnapshot }[];`,
+  "storagebox snapshot list": `${ROBOT_STORAGEBOX_SNAPSHOT}\n\ntype Output = { snapshot: StorageBoxSnapshot }[];`,
 
   // --- storagebox subaccount ---
-  'storagebox subaccount list': `${ROBOT_STORAGEBOX_SUBACCOUNT}\n\ntype Output = { subaccount: StorageBoxSubaccount }[];`,
+  "storagebox subaccount list": `${ROBOT_STORAGEBOX_SUBACCOUNT}\n\ntype Output = { subaccount: StorageBoxSubaccount }[];`,
 
   // --- traffic ---
-  'traffic query': `${ROBOT_TRAFFIC}\n\ntype Output = Traffic;`,
+  "traffic query": `${ROBOT_TRAFFIC}\n\ntype Output = Traffic;`,
 
   // --- wol ---
-  'wol status': `${ROBOT_WOL}\n\ntype Output = Wol;`,
+  "wol status": `${ROBOT_WOL}\n\ntype Output = Wol;`,
 
   // --- cancel ---
-  'cancel status': `${ROBOT_CANCELLATION}\n\ntype Output = Cancellation;`,
+  "cancel status": `${ROBOT_CANCELLATION}\n\ntype Output = Cancellation;`,
 
   // --- order ---
-  'order products':    `${ROBOT_SERVER_PRODUCT}\n\ntype Output = { product: ServerProduct }[];`,
-  'order market':      `${ROBOT_SERVER_MARKET_PRODUCT}\n\ntype Output = { product: ServerMarketProduct }[];`,
-  'order transactions': `${ROBOT_SERVER_TRANSACTION}\n\ntype Output = { transaction: ServerTransaction }[];`,
-  'order transaction':  `${ROBOT_SERVER_TRANSACTION}\n\ntype Output = { transaction: ServerTransaction }[];`,
+  "order products": `${ROBOT_SERVER_PRODUCT}\n\ntype Output = { product: ServerProduct }[];`,
+  "order market": `${ROBOT_SERVER_MARKET_PRODUCT}\n\ntype Output = { product: ServerMarketProduct }[];`,
+  "order transactions": `${ROBOT_SERVER_TRANSACTION}\n\ntype Output = { transaction: ServerTransaction }[];`,
+  "order transaction": `${ROBOT_SERVER_TRANSACTION}\n\ntype Output = { transaction: ServerTransaction }[];`,
 
   // ==================== Cloud API ====================
 
   // --- cloud server ---
-  'cloud server list':     `${CLOUD_SERVER}\n\ntype Output = CloudServer[];`,
-  'cloud server describe': `${CLOUD_SERVER}\n\ntype Output = CloudServer;`,
+  "cloud server list": `${CLOUD_SERVER}\n\ntype Output = CloudServer[];`,
+  "cloud server describe": `${CLOUD_SERVER}\n\ntype Output = CloudServer;`,
 
   // --- cloud image ---
-  'cloud image list':     `${CLOUD_IMAGE}\n\ntype Output = Image[];`,
-  'cloud image describe': `${CLOUD_IMAGE}\n\ntype Output = Image;`,
+  "cloud image list": `${CLOUD_IMAGE}\n\ntype Output = Image[];`,
+  "cloud image describe": `${CLOUD_IMAGE}\n\ntype Output = Image;`,
 
   // --- cloud volume ---
-  'cloud volume list':     `${CLOUD_VOLUME}\n\ntype Output = Volume[];`,
-  'cloud volume describe': `${CLOUD_VOLUME}\n\ntype Output = Volume;`,
+  "cloud volume list": `${CLOUD_VOLUME}\n\ntype Output = Volume[];`,
+  "cloud volume describe": `${CLOUD_VOLUME}\n\ntype Output = Volume;`,
 
   // --- cloud network ---
-  'cloud network list':     `${CLOUD_NETWORK}\n\ntype Output = Network[];`,
-  'cloud network describe': `${CLOUD_NETWORK}\n\ntype Output = Network;`,
+  "cloud network list": `${CLOUD_NETWORK}\n\ntype Output = Network[];`,
+  "cloud network describe": `${CLOUD_NETWORK}\n\ntype Output = Network;`,
 
   // --- cloud firewall ---
-  'cloud firewall list':     `${CLOUD_FIREWALL}\n\ntype Output = CloudFirewall[];`,
-  'cloud firewall describe': `${CLOUD_FIREWALL}\n\ntype Output = CloudFirewall;`,
+  "cloud firewall list": `${CLOUD_FIREWALL}\n\ntype Output = CloudFirewall[];`,
+  "cloud firewall describe": `${CLOUD_FIREWALL}\n\ntype Output = CloudFirewall;`,
 
   // --- cloud floating-ip ---
-  'cloud floating-ip list':     `${CLOUD_FLOATING_IP}\n\ntype Output = FloatingIp[];`,
-  'cloud floating-ip describe': `${CLOUD_FLOATING_IP}\n\ntype Output = FloatingIp;`,
+  "cloud floating-ip list": `${CLOUD_FLOATING_IP}\n\ntype Output = FloatingIp[];`,
+  "cloud floating-ip describe": `${CLOUD_FLOATING_IP}\n\ntype Output = FloatingIp;`,
 
   // --- cloud primary-ip ---
-  'cloud primary-ip list':     `${CLOUD_PRIMARY_IP}\n\ntype Output = PrimaryIp[];`,
-  'cloud primary-ip describe': `${CLOUD_PRIMARY_IP}\n\ntype Output = PrimaryIp;`,
+  "cloud primary-ip list": `${CLOUD_PRIMARY_IP}\n\ntype Output = PrimaryIp[];`,
+  "cloud primary-ip describe": `${CLOUD_PRIMARY_IP}\n\ntype Output = PrimaryIp;`,
 
   // --- cloud ssh-key ---
-  'cloud ssh-key list':     `${CLOUD_SSH_KEY}\n\ntype Output = CloudSshKey[];`,
-  'cloud ssh-key describe': `${CLOUD_SSH_KEY}\n\ntype Output = CloudSshKey;`,
+  "cloud ssh-key list": `${CLOUD_SSH_KEY}\n\ntype Output = CloudSshKey[];`,
+  "cloud ssh-key describe": `${CLOUD_SSH_KEY}\n\ntype Output = CloudSshKey;`,
 
   // --- cloud certificate ---
-  'cloud certificate list':     `${CLOUD_CERTIFICATE}\n\ntype Output = Certificate[];`,
-  'cloud certificate describe': `${CLOUD_CERTIFICATE}\n\ntype Output = Certificate;`,
+  "cloud certificate list": `${CLOUD_CERTIFICATE}\n\ntype Output = Certificate[];`,
+  "cloud certificate describe": `${CLOUD_CERTIFICATE}\n\ntype Output = Certificate;`,
 
   // --- cloud load-balancer ---
-  'cloud load-balancer list':     `${CLOUD_LOAD_BALANCER}\n\ntype Output = LoadBalancer[];`,
-  'cloud load-balancer describe': `${CLOUD_LOAD_BALANCER}\n\ntype Output = LoadBalancer;`,
+  "cloud load-balancer list": `${CLOUD_LOAD_BALANCER}\n\ntype Output = LoadBalancer[];`,
+  "cloud load-balancer describe": `${CLOUD_LOAD_BALANCER}\n\ntype Output = LoadBalancer;`,
 
   // --- cloud placement-group ---
-  'cloud placement-group list':     `${CLOUD_PLACEMENT_GROUP}\n\ntype Output = PlacementGroup[];`,
-  'cloud placement-group describe': `${CLOUD_PLACEMENT_GROUP}\n\ntype Output = PlacementGroup;`,
+  "cloud placement-group list": `${CLOUD_PLACEMENT_GROUP}\n\ntype Output = PlacementGroup[];`,
+  "cloud placement-group describe": `${CLOUD_PLACEMENT_GROUP}\n\ntype Output = PlacementGroup;`,
 
   // --- cloud datacenter ---
-  'cloud datacenter list':     `${CLOUD_DATACENTER}\n\ntype Output = Datacenter[];`,
-  'cloud datacenter describe': `${CLOUD_DATACENTER}\n\ntype Output = Datacenter;`,
+  "cloud datacenter list": `${CLOUD_DATACENTER}\n\ntype Output = Datacenter[];`,
+  "cloud datacenter describe": `${CLOUD_DATACENTER}\n\ntype Output = Datacenter;`,
 
   // --- cloud location ---
-  'cloud location list':     `${CLOUD_LOCATION}\n\ntype Output = Location[];`,
-  'cloud location describe': `${CLOUD_LOCATION}\n\ntype Output = Location;`,
+  "cloud location list": `${CLOUD_LOCATION}\n\ntype Output = Location[];`,
+  "cloud location describe": `${CLOUD_LOCATION}\n\ntype Output = Location;`,
 
   // --- cloud server-type ---
-  'cloud server-type list':     `${CLOUD_SERVER_TYPE}\n\ntype Output = ServerType[];`,
-  'cloud server-type describe': `${CLOUD_SERVER_TYPE}\n\ntype Output = ServerType;`,
+  "cloud server-type list": `${CLOUD_SERVER_TYPE}\n\ntype Output = ServerType[];`,
+  "cloud server-type describe": `${CLOUD_SERVER_TYPE}\n\ntype Output = ServerType;`,
 
   // --- cloud load-balancer-type ---
-  'cloud load-balancer-type list':     `${CLOUD_LOAD_BALANCER_TYPE}\n\ntype Output = LoadBalancerType[];`,
-  'cloud load-balancer-type describe': `${CLOUD_LOAD_BALANCER_TYPE}\n\ntype Output = LoadBalancerType;`,
+  "cloud load-balancer-type list": `${CLOUD_LOAD_BALANCER_TYPE}\n\ntype Output = LoadBalancerType[];`,
+  "cloud load-balancer-type describe": `${CLOUD_LOAD_BALANCER_TYPE}\n\ntype Output = LoadBalancerType;`,
 
   // --- cloud iso ---
-  'cloud iso list':     `${CLOUD_ISO}\n\ntype Output = ISO[];`,
-  'cloud iso describe': `${CLOUD_ISO}\n\ntype Output = ISO;`,
+  "cloud iso list": `${CLOUD_ISO}\n\ntype Output = ISO[];`,
+  "cloud iso describe": `${CLOUD_ISO}\n\ntype Output = ISO;`,
 
   // ==================== Auction API ====================
 
-  'auction list': `${AUCTION_SERVER}\n\ntype Output = AuctionServer[];`,
-  'auction show': `${AUCTION_SERVER}\n\ntype Output = AuctionServer;`,
+  "auction list": `${AUCTION_SERVER}\n\ntype Output = AuctionServer[];`,
+  "auction show": `${AUCTION_SERVER}\n\ntype Output = AuctionServer;`,
 };

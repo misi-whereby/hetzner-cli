@@ -1,47 +1,62 @@
-import type { Command } from 'commander';
-import { asyncAction, output, type ActionOptions } from '../../shared/helpers.js';
-import * as robotFmt from '../formatter.js';
+import type { Command } from "commander";
+import {
+  type ActionOptions,
+  asyncAction,
+  output,
+} from "../../shared/helpers.js";
+import {
+  formatServerMarketProductList,
+  formatServerProductList,
+  formatTransactionList,
+} from "../formatter.js";
 
 export function registerOrderCommands(parent: Command): void {
-  const order = parent.command('order').description('Server ordering');
+  const order = parent.command("order").description("Server ordering");
 
   order
-    .command('products')
-    .description('List available server products')
+    .command("products")
+    .description("List available server products")
     .action(
       asyncAction(async (client, options: ActionOptions) => {
         const products = await client.listServerProducts();
-        output(products, robotFmt.formatServerProductList, options);
+        output(products, formatServerProductList, options);
       })
     );
 
   order
-    .command('market')
-    .description('List server market (auction) products')
+    .command("market")
+    .description("List server market (auction) products")
     .action(
       asyncAction(async (client, options: ActionOptions) => {
         const products = await client.listServerMarketProducts();
-        output(products, robotFmt.formatServerMarketProductList, options);
+        output(products, formatServerMarketProductList, options);
       })
     );
 
   order
-    .command('transactions')
-    .description('List order transactions')
+    .command("transactions")
+    .description("List order transactions")
     .action(
       asyncAction(async (client, options: ActionOptions) => {
         const transactions = await client.listServerTransactions();
-        output(transactions, robotFmt.formatTransactionList, options);
+        output(transactions, formatTransactionList, options);
       })
     );
 
   order
-    .command('transaction <id>')
-    .description('Get order transaction details')
+    .command("transaction <id>")
+    .description("Get order transaction details")
     .action(
-      asyncAction(async (client, transactionId: string, options: ActionOptions) => {
-        const { transaction } = await client.getServerTransaction(transactionId);
-        output(transaction, (t) => robotFmt.formatTransactionList([{ transaction: t }]), options);
-      })
+      asyncAction(
+        async (client, transactionId: string, options: ActionOptions) => {
+          const { transaction } =
+            await client.getServerTransaction(transactionId);
+          output(
+            transaction,
+            (t) => formatTransactionList([{ transaction: t }]),
+            options
+          );
+        }
+      )
     );
 }

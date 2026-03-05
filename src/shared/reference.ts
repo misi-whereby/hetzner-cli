@@ -4,7 +4,7 @@
 // by language models (Claude, GPT, etc.) while remaining human-readable.
 // ============================================================================
 
-export type ReferenceSection = 'robot' | 'cloud' | 'auction';
+export type ReferenceSection = "robot" | "cloud" | "auction";
 
 const PREAMBLE = `\
 # HETZNER CLI — COMPLETE REFERENCE

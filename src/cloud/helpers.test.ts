@@ -1,214 +1,254 @@
-import { describe, it, expect, vi, beforeEach, afterEach, type MockInstance } from 'vitest';
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  type MockInstance,
+  vi,
+} from "vitest";
 
-vi.mock('./context.js', () => ({
+vi.mock("./context.js", () => ({
   resolveToken: vi.fn(),
 }));
 
-vi.mock('./client.js', () => ({
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  HetznerCloudClient: vi.fn(function () {}),
+vi.mock("./client.js", () => ({
+  // biome-ignore lint/complexity/useArrowFunction: must use regular function for constructor mock
+  HetznerCloudClient: vi.fn(function () {
+    // mock constructor
+  }),
 }));
 
-vi.mock('@inquirer/prompts', () => ({
+vi.mock("@inquirer/prompts", () => ({
   confirm: vi.fn(),
 }));
 
-vi.mock('../shared/formatter.js', () => ({
+vi.mock("../shared/formatter.js", () => ({
   error: vi.fn((msg: string) => `ERROR: ${msg}`),
   formatJson: vi.fn((data: unknown) => JSON.stringify(data, null, 2)),
 }));
 
-import { cloudAction, cloudOutput, cloudConfirm, resolveIdOrName } from './helpers.js';
-import { resolveToken } from './context.js';
-import { HetznerCloudClient } from './client.js';
-import { confirm } from '@inquirer/prompts';
+import { confirm } from "@inquirer/prompts";
+import { HetznerCloudClient } from "./client.js";
+import { resolveToken } from "./context.js";
+import {
+  cloudAction,
+  cloudConfirm,
+  cloudOutput,
+  resolveIdOrName,
+} from "./helpers.js";
 
 const mockResolveToken = vi.mocked(resolveToken);
 const mockConfirm = vi.mocked(confirm);
 const mockHetznerCloudClient = vi.mocked(HetznerCloudClient);
 
-describe('helpers', () => {
+describe("helpers", () => {
   let mockExit: MockInstance;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockExit = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
+    mockExit = vi
+      .spyOn(process, "exit")
+      .mockImplementation(() => undefined as never);
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  describe('cloudAction', () => {
-    it('should resolve token and create client', async () => {
-      mockResolveToken.mockResolvedValue('test-token');
+  describe("cloudAction", () => {
+    it("should resolve token and create client", async () => {
+      mockResolveToken.mockResolvedValue("test-token");
       const mockClient = {} as HetznerCloudClient;
-      mockHetznerCloudClient.mockImplementation(function () { return mockClient; } as () => HetznerCloudClient);
+      // biome-ignore lint/complexity/useArrowFunction: must use regular function for constructor mock
+      mockHetznerCloudClient.mockImplementation(function () {
+        return mockClient;
+      } as unknown as () => HetznerCloudClient);
 
       const fn = vi.fn().mockResolvedValue(undefined);
       const action = cloudAction(fn);
-      await action({ token: 'flag-token' });
+      await action({ token: "flag-token" });
 
-      expect(mockResolveToken).toHaveBeenCalledWith('flag-token');
-      expect(mockHetznerCloudClient).toHaveBeenCalledWith('test-token');
+      expect(mockResolveToken).toHaveBeenCalledWith("flag-token");
+      expect(mockHetznerCloudClient).toHaveBeenCalledWith("test-token");
       expect(fn).toHaveBeenCalledWith(mockClient);
     });
 
-    it('should pass through additional arguments before options', async () => {
-      mockResolveToken.mockResolvedValue('test-token');
+    it("should pass through additional arguments before options", async () => {
+      mockResolveToken.mockResolvedValue("test-token");
       const mockClient = {} as HetznerCloudClient;
-      mockHetznerCloudClient.mockImplementation(function () { return mockClient; } as () => HetznerCloudClient);
+      // biome-ignore lint/complexity/useArrowFunction: must use regular function for constructor mock
+      mockHetznerCloudClient.mockImplementation(function () {
+        return mockClient;
+      } as unknown as () => HetznerCloudClient);
 
       const fn = vi.fn().mockResolvedValue(undefined);
       const action = cloudAction<[string, number]>(fn);
-      await action('arg1', 42, { token: 'tok' });
+      await action("arg1", 42, { token: "tok" });
 
-      expect(fn).toHaveBeenCalledWith(mockClient, 'arg1', 42);
+      expect(fn).toHaveBeenCalledWith(mockClient, "arg1", 42);
     });
 
-    it('should handle Error and call process.exit(1)', async () => {
-      mockResolveToken.mockRejectedValue(new Error('Token not found'));
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(vi.fn());
+    it("should handle Error and call process.exit(1)", async () => {
+      mockResolveToken.mockRejectedValue(new Error("Token not found"));
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(vi.fn());
 
       const action = cloudAction(vi.fn());
       await action({});
 
-      expect(consoleSpy).toHaveBeenCalledWith('ERROR: Token not found');
+      expect(consoleSpy).toHaveBeenCalledWith("ERROR: Token not found");
       expect(mockExit).toHaveBeenCalledWith(1);
     });
 
-    it('should handle ExitPromptError and exit with 0', async () => {
-      mockResolveToken.mockResolvedValue('tok');
-      mockHetznerCloudClient.mockImplementation(function () { return {} as HetznerCloudClient; } as () => HetznerCloudClient);
+    it("should handle ExitPromptError and exit with 0", async () => {
+      mockResolveToken.mockResolvedValue("tok");
+      // biome-ignore lint/complexity/useArrowFunction: must use regular function for constructor mock
+      mockHetznerCloudClient.mockImplementation(function () {
+        return {} as HetznerCloudClient;
+      } as unknown as () => HetznerCloudClient);
 
-      const exitErr = new Error('ExitPromptError');
-      exitErr.name = 'ExitPromptError';
+      const exitErr = new Error("ExitPromptError");
+      exitErr.name = "ExitPromptError";
       const action = cloudAction(vi.fn().mockRejectedValue(exitErr));
       await action({});
 
       expect(mockExit).toHaveBeenCalledWith(0);
     });
 
-    it('should handle unknown error type', async () => {
-      mockResolveToken.mockRejectedValue('string error');
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(vi.fn());
+    it("should handle unknown error type", async () => {
+      mockResolveToken.mockRejectedValue("string error");
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(vi.fn());
 
       const action = cloudAction(vi.fn());
       await action({});
 
-      expect(consoleSpy).toHaveBeenCalledWith('ERROR: An unknown error occurred');
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "ERROR: An unknown error occurred"
+      );
       expect(mockExit).toHaveBeenCalledWith(1);
     });
   });
 
-  describe('cloudOutput', () => {
-    it('should output JSON when json option is true', () => {
-      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(vi.fn());
-      const formatter = vi.fn(() => 'formatted');
+  describe("cloudOutput", () => {
+    it("should output JSON when json option is true", () => {
+      const consoleSpy = vi.spyOn(console, "log").mockImplementation(vi.fn());
+      const formatter = vi.fn(() => "formatted");
 
       cloudOutput({ id: 1 }, formatter, { json: true });
 
-      expect(consoleSpy).toHaveBeenCalledWith(JSON.stringify({ id: 1 }, null, 2));
+      expect(consoleSpy).toHaveBeenCalledWith(
+        JSON.stringify({ id: 1 }, null, 2)
+      );
       expect(formatter).not.toHaveBeenCalled();
     });
 
-    it('should use formatter when json option is false', () => {
-      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(vi.fn());
-      const formatter = vi.fn(() => 'formatted output');
+    it("should use formatter when json option is false", () => {
+      const consoleSpy = vi.spyOn(console, "log").mockImplementation(vi.fn());
+      const formatter = vi.fn(() => "formatted output");
 
       cloudOutput({ id: 1 }, formatter, { json: false });
 
       expect(formatter).toHaveBeenCalledWith({ id: 1 });
-      expect(consoleSpy).toHaveBeenCalledWith('formatted output');
+      expect(consoleSpy).toHaveBeenCalledWith("formatted output");
     });
 
-    it('should use formatter when json option is undefined', () => {
-      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(vi.fn());
-      const formatter = vi.fn(() => 'table');
+    it("should use formatter when json option is undefined", () => {
+      const consoleSpy = vi.spyOn(console, "log").mockImplementation(vi.fn());
+      const formatter = vi.fn(() => "table");
 
-      cloudOutput('data', formatter, {});
+      cloudOutput("data", formatter, {});
 
-      expect(formatter).toHaveBeenCalledWith('data');
-      expect(consoleSpy).toHaveBeenCalledWith('table');
+      expect(formatter).toHaveBeenCalledWith("data");
+      expect(consoleSpy).toHaveBeenCalledWith("table");
     });
   });
 
-  describe('cloudConfirm', () => {
-    it('should return true immediately when --yes is set', async () => {
-      const result = await cloudConfirm('Delete?', { yes: true });
+  describe("cloudConfirm", () => {
+    it("should return true immediately when --yes is set", async () => {
+      const result = await cloudConfirm("Delete?", { yes: true });
 
       expect(result).toBe(true);
       expect(mockConfirm).not.toHaveBeenCalled();
     });
 
-    it('should prompt and return true when confirmed', async () => {
+    it("should prompt and return true when confirmed", async () => {
       mockConfirm.mockResolvedValue(true);
 
-      const result = await cloudConfirm('Delete?', {});
+      const result = await cloudConfirm("Delete?", {});
 
-      expect(mockConfirm).toHaveBeenCalledWith({ message: 'Delete?', default: false });
+      expect(mockConfirm).toHaveBeenCalledWith({
+        message: "Delete?",
+        default: false,
+      });
       expect(result).toBe(true);
     });
 
-    it('should prompt, log Aborted, and return false when not confirmed', async () => {
+    it("should prompt, log Aborted, and return false when not confirmed", async () => {
       mockConfirm.mockResolvedValue(false);
-      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(vi.fn());
+      const consoleSpy = vi.spyOn(console, "log").mockImplementation(vi.fn());
 
-      const result = await cloudConfirm('Delete?', {});
+      const result = await cloudConfirm("Delete?", {});
 
       expect(result).toBe(false);
-      expect(consoleSpy).toHaveBeenCalledWith('Aborted.');
+      expect(consoleSpy).toHaveBeenCalledWith("Aborted.");
     });
 
-    it('should pass custom default value to confirm', async () => {
+    it("should pass custom default value to confirm", async () => {
       mockConfirm.mockResolvedValue(true);
 
-      await cloudConfirm('Proceed?', {}, true);
+      await cloudConfirm("Proceed?", {}, true);
 
-      expect(mockConfirm).toHaveBeenCalledWith({ message: 'Proceed?', default: true });
+      expect(mockConfirm).toHaveBeenCalledWith({
+        message: "Proceed?",
+        default: true,
+      });
     });
   });
 
-  describe('resolveIdOrName', () => {
-    it('should return numeric ID directly without calling resolver', async () => {
+  describe("resolveIdOrName", () => {
+    it("should return numeric ID directly without calling resolver", async () => {
       const resolver = vi.fn();
-      const result = await resolveIdOrName('12345', 'server', resolver);
-      expect(result).toBe(12345);
+      const result = await resolveIdOrName("12345", "server", resolver);
+      expect(result).toBe(12_345);
       expect(resolver).not.toHaveBeenCalled();
     });
 
-    it('should resolve a name to an ID when exactly one match', async () => {
-      const resolver = vi.fn().mockResolvedValue([{ id: 42, name: 'my-server' }]);
-      const result = await resolveIdOrName('my-server', 'server', resolver);
+    it("should resolve a name to an ID when exactly one match", async () => {
+      const resolver = vi
+        .fn()
+        .mockResolvedValue([{ id: 42, name: "my-server" }]);
+      const result = await resolveIdOrName("my-server", "server", resolver);
       expect(result).toBe(42);
-      expect(resolver).toHaveBeenCalledWith('my-server');
+      expect(resolver).toHaveBeenCalledWith("my-server");
     });
 
     it('should throw "not found" when no matches', async () => {
       const resolver = vi.fn().mockResolvedValue([]);
-      await expect(resolveIdOrName('missing', 'server', resolver))
-        .rejects.toThrow("server 'missing' not found");
+      await expect(
+        resolveIdOrName("missing", "server", resolver)
+      ).rejects.toThrow("server 'missing' not found");
     });
 
     it('should throw "multiple match" when more than one match', async () => {
       const resolver = vi.fn().mockResolvedValue([
-        { id: 1, name: 'dup' },
-        { id: 2, name: 'dup' },
+        { id: 1, name: "dup" },
+        { id: 2, name: "dup" },
       ]);
-      await expect(resolveIdOrName('dup', 'server', resolver))
-        .rejects.toThrow("Multiple servers match 'dup' (IDs: 1, 2). Use numeric ID instead.");
+      await expect(resolveIdOrName("dup", "server", resolver)).rejects.toThrow(
+        "Multiple servers match 'dup' (IDs: 1, 2). Use numeric ID instead."
+      );
     });
 
-    it('should treat mixed alphanumeric input as a name', async () => {
-      const resolver = vi.fn().mockResolvedValue([{ id: 99, name: '123abc' }]);
-      const result = await resolveIdOrName('123abc', 'server', resolver);
+    it("should treat mixed alphanumeric input as a name", async () => {
+      const resolver = vi.fn().mockResolvedValue([{ id: 99, name: "123abc" }]);
+      const result = await resolveIdOrName("123abc", "server", resolver);
       expect(result).toBe(99);
-      expect(resolver).toHaveBeenCalledWith('123abc');
+      expect(resolver).toHaveBeenCalledWith("123abc");
     });
 
-    it('should handle leading zeros as numeric ID', async () => {
+    it("should handle leading zeros as numeric ID", async () => {
       const resolver = vi.fn();
-      const result = await resolveIdOrName('007', 'server', resolver);
+      const result = await resolveIdOrName("007", "server", resolver);
       expect(result).toBe(7);
       expect(resolver).not.toHaveBeenCalled();
     });

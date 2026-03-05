@@ -7,14 +7,14 @@
 export type Labels = Record<string, string>;
 
 export interface CloudAction {
-  id: number;
   command: string;
-  status: 'running' | 'success' | 'error';
-  progress: number;
-  started: string;
-  finished: string | null;
-  resources: { id: number; type: string }[];
   error: { code: string; message: string } | null;
+  finished: string | null;
+  id: number;
+  progress: number;
+  resources: { id: number; type: string }[];
+  started: string;
+  status: "running" | "success" | "error";
 }
 
 export interface PaginationMeta {
@@ -44,10 +44,10 @@ export interface Protection {
 
 // Datacenter
 export interface Datacenter {
-  id: number;
-  name: string;
   description: string;
+  id: number;
   location: Location;
+  name: string;
   server_types: {
     supported: number[];
     available: number[];
@@ -57,138 +57,156 @@ export interface Datacenter {
 
 // Location
 export interface Location {
-  id: number;
-  name: string;
-  description: string;
-  country: string;
   city: string;
+  country: string;
+  description: string;
+  id: number;
   latitude: number;
   longitude: number;
+  name: string;
   network_zone: string;
 }
 
 // Server Type
 export interface ServerType {
-  id: number;
-  name: string;
-  description: string;
+  architecture: "x86" | "arm";
   cores: number;
-  memory: number;
-  disk: number;
-  storage_type: 'local' | 'network';
-  cpu_type: 'shared' | 'dedicated';
-  architecture: 'x86' | 'arm';
+  cpu_type: "shared" | "dedicated";
   deprecated: boolean;
   deprecation?: {
     announced: string;
     unavailable_after: string;
   } | null;
+  description: string;
+  disk: number;
+  id: number;
+  memory: number;
+  name: string;
   prices: ServerTypePrice[];
+  storage_type: "local" | "network";
 }
 
 export interface ServerTypePrice {
+  included_traffic: number;
   location: string;
   price_hourly: { net: string; gross: string };
   price_monthly: { net: string; gross: string };
-  included_traffic: number;
 }
 
 // ISO
 export interface ISO {
-  id: number;
-  name: string;
-  description: string;
-  type: 'public' | 'private';
+  architecture: "x86" | "arm" | null;
   deprecation?: {
     announced: string;
     unavailable_after: string;
   } | null;
-  architecture: 'x86' | 'arm' | null;
+  description: string;
+  id: number;
+  name: string;
+  type: "public" | "private";
 }
 
 // Image
 export interface Image {
-  id: number;
-  type: 'system' | 'snapshot' | 'backup' | 'app';
-  status: 'available' | 'creating' | 'unavailable';
-  name: string | null;
-  description: string;
-  image_size: number | null;
-  disk_size: number;
+  architecture: "x86" | "arm";
+  bound_to: number | null;
   created: string;
   created_from: { id: number; name: string } | null;
-  bound_to: number | null;
+  deleted: string | null;
+  deprecated: string | null;
+  description: string;
+  disk_size: number;
+  id: number;
+  image_size: number | null;
+  labels: Labels;
+  name: string | null;
   os_flavor: string;
   os_version: string | null;
-  architecture: 'x86' | 'arm';
-  rapid_deploy: boolean;
   protection: Protection;
-  deprecated: string | null;
-  deleted: string | null;
-  labels: Labels;
+  rapid_deploy: boolean;
+  status: "available" | "creating" | "unavailable";
+  type: "system" | "snapshot" | "backup" | "app";
 }
 
 // SSH Key (Cloud)
 export interface CloudSshKey {
-  id: number;
-  name: string;
-  fingerprint: string;
-  public_key: string;
-  labels: Labels;
   created: string;
+  fingerprint: string;
+  id: number;
+  labels: Labels;
+  name: string;
+  public_key: string;
 }
 
 // Server
 export interface CloudServer {
+  backup_window: string | null;
+  created: string;
+  datacenter: Datacenter;
   id: number;
+  image: Image | null;
+  included_traffic: number;
+  ingoing_traffic: number | null;
+  iso: ISO | null;
+  labels: Labels;
+  load_balancers: number[];
+  locked: boolean;
   name: string;
-  status: 'running' | 'initializing' | 'starting' | 'stopping' | 'off' | 'deleting' | 'migrating' | 'rebuilding' | 'unknown';
+  outgoing_traffic: number | null;
+  placement_group?: { id: number; name: string; type: string } | null;
+  primary_disk_size: number;
+  private_net: {
+    network: number;
+    ip: string;
+    alias_ips: string[];
+    mac_address: string;
+  }[];
+  protection: Protection;
   public_net: {
     ipv4: { ip: string; dns_ptr: string; blocked: boolean } | null;
-    ipv6: { ip: string; dns_ptr: { ip: string; dns_ptr: string }[]; blocked: boolean } | null;
+    ipv6: {
+      ip: string;
+      dns_ptr: { ip: string; dns_ptr: string }[];
+      blocked: boolean;
+    } | null;
     floating_ips: number[];
-    firewalls: { id: number; status: 'applied' | 'pending' }[];
+    firewalls: { id: number; status: "applied" | "pending" }[];
   };
-  private_net: { network: number; ip: string; alias_ips: string[]; mac_address: string }[];
-  server_type: ServerType;
-  datacenter: Datacenter;
-  image: Image | null;
-  iso: ISO | null;
   rescue_enabled: boolean;
-  locked: boolean;
-  backup_window: string | null;
-  outgoing_traffic: number | null;
-  ingoing_traffic: number | null;
-  included_traffic: number;
-  protection: Protection;
-  labels: Labels;
+  server_type: ServerType;
+  status:
+    | "running"
+    | "initializing"
+    | "starting"
+    | "stopping"
+    | "off"
+    | "deleting"
+    | "migrating"
+    | "rebuilding"
+    | "unknown";
   volumes: number[];
-  load_balancers: number[];
-  primary_disk_size: number;
-  created: string;
-  placement_group?: { id: number; name: string; type: string } | null;
 }
 
 // Network
 export interface Network {
-  id: number;
-  name: string;
-  ip_range: string;
-  subnets: NetworkSubnet[];
-  routes: NetworkRoute[];
-  servers: number[];
-  load_balancers: number[];
-  protection: Protection;
-  labels: Labels;
   created: string;
   expose_routes_to_vswitch: boolean;
+  id: number;
+  ip_range: string;
+  labels: Labels;
+  load_balancers: number[];
+  name: string;
+  protection: Protection;
+  routes: NetworkRoute[];
+  servers: number[];
+  subnets: NetworkSubnet[];
 }
 
 export interface NetworkSubnet {
-  type: 'cloud' | 'server' | 'vswitch';
+  gateway: string;
   ip_range: string;
   network_zone: string;
-  gateway: string;
+  type: "cloud" | "server" | "vswitch";
   vswitch_id?: number | null;
 }
 
@@ -199,128 +217,128 @@ export interface NetworkRoute {
 
 // Cloud Firewall
 export interface CloudFirewall {
-  id: number;
-  name: string;
-  labels: Labels;
-  rules: CloudFirewallRule[];
   applied_to: CloudFirewallAppliedTo[];
   created: string;
+  id: number;
+  labels: Labels;
+  name: string;
+  rules: CloudFirewallRule[];
 }
 
 export interface CloudFirewallRule {
-  direction: 'in' | 'out';
-  protocol: 'tcp' | 'udp' | 'icmp' | 'esp' | 'gre';
-  port: string | null;
-  source_ips: string[];
-  destination_ips: string[];
   description: string | null;
+  destination_ips: string[];
+  direction: "in" | "out";
+  port: string | null;
+  protocol: "tcp" | "udp" | "icmp" | "esp" | "gre";
+  source_ips: string[];
 }
 
 export interface CloudFirewallAppliedTo {
-  type: 'server' | 'label_selector';
-  server?: { id: number };
   label_selector?: { selector: string };
+  server?: { id: number };
+  type: "server" | "label_selector";
 }
 
 // Floating IP
 export interface FloatingIp {
-  id: number;
-  name: string;
+  blocked: boolean;
+  created: string;
   description: string;
-  ip: string;
-  type: 'ipv4' | 'ipv6';
-  server: number | null;
   dns_ptr: { ip: string; dns_ptr: string }[];
   home_location: Location;
-  blocked: boolean;
-  protection: Protection;
+  id: number;
+  ip: string;
   labels: Labels;
-  created: string;
+  name: string;
+  protection: Protection;
+  server: number | null;
+  type: "ipv4" | "ipv6";
 }
 
 // Primary IP
 export interface PrimaryIp {
-  id: number;
-  name: string;
-  ip: string;
-  type: 'ipv4' | 'ipv6';
   assignee_id: number | null;
-  assignee_type: 'server';
+  assignee_type: "server";
   auto_delete: boolean;
   blocked: boolean;
+  created: string;
   datacenter: Datacenter;
   dns_ptr: { ip: string; dns_ptr: string }[];
+  id: number;
+  ip: string;
   labels: Labels;
+  name: string;
   protection: Protection;
-  created: string;
+  type: "ipv4" | "ipv6";
 }
 
 // Volume
 export interface Volume {
-  id: number;
-  name: string;
-  server: number | null;
-  status: 'creating' | 'available' | 'attached';
-  location: Location;
-  size: number;
-  linux_device: string | null;
-  protection: Protection;
-  labels: Labels;
   created: string;
   format: string | null;
+  id: number;
+  labels: Labels;
+  linux_device: string | null;
+  location: Location;
+  name: string;
+  protection: Protection;
+  server: number | null;
+  size: number;
+  status: "creating" | "available" | "attached";
 }
 
 // Load Balancer
 export interface LoadBalancer {
+  algorithm: { type: "round_robin" | "least_connections" };
+  created: string;
   id: number;
+  included_traffic: number;
+  ingoing_traffic: number | null;
+  labels: Labels;
+  load_balancer_type: LoadBalancerType;
+  location: Location;
   name: string;
+  outgoing_traffic: number | null;
+  private_net: { network: number; ip: string }[];
+  protection: Protection;
   public_net: {
     enabled: boolean;
     ipv4: { ip: string; dns_ptr: string };
     ipv6: { ip: string; dns_ptr: string };
   };
-  private_net: { network: number; ip: string }[];
-  location: Location;
-  load_balancer_type: LoadBalancerType;
-  protection: Protection;
-  labels: Labels;
-  targets: LoadBalancerTarget[];
   services: LoadBalancerService[];
-  algorithm: { type: 'round_robin' | 'least_connections' };
-  outgoing_traffic: number | null;
-  ingoing_traffic: number | null;
-  included_traffic: number;
-  created: string;
+  targets: LoadBalancerTarget[];
 }
 
 export interface LoadBalancerType {
-  id: number;
-  name: string;
+  deprecated: string | null;
   description: string;
+  id: number;
+  max_assigned_certificates: number;
   max_connections: number;
   max_services: number;
   max_targets: number;
-  max_assigned_certificates: number;
-  deprecated: string | null;
+  name: string;
   prices: ServerTypePrice[];
 }
 
 export interface LoadBalancerTarget {
-  type: 'server' | 'label_selector' | 'ip';
-  server?: { id: number };
-  label_selector?: { selector: string };
+  health_status: {
+    listen_port: number;
+    status: "healthy" | "unhealthy" | "unknown";
+  }[];
   ip?: { ip: string };
-  health_status: { listen_port: number; status: 'healthy' | 'unhealthy' | 'unknown' }[];
+  label_selector?: { selector: string };
+  server?: { id: number };
+  type: "server" | "label_selector" | "ip";
   use_private_ip: boolean;
 }
 
 export interface LoadBalancerService {
-  protocol: 'tcp' | 'http' | 'https';
-  listen_port: number;
   destination_port: number;
-  proxyprotocol: boolean;
   health_check: {
-    protocol: 'tcp' | 'http' | 'https';
+    protocol: "tcp" | "http" | "https";
     port: number;
     interval: number;
     timeout: number;
@@ -340,34 +358,37 @@ export interface LoadBalancerService {
     redirect_http: boolean;
     sticky_sessions: boolean;
   };
+  listen_port: number;
+  protocol: "tcp" | "http" | "https";
+  proxyprotocol: boolean;
 }
 
 // Certificate
 export interface Certificate {
-  id: number;
-  name: string;
-  labels: Labels;
-  type: 'uploaded' | 'managed';
   certificate: string | null;
   created: string;
-  not_valid_before: string;
-  not_valid_after: string;
   domain_names: string[];
   fingerprint: string | null;
+  id: number;
+  labels: Labels;
+  name: string;
+  not_valid_after: string;
+  not_valid_before: string;
   status: {
-    issuance: 'pending' | 'completed' | 'failed';
-    renewal: 'scheduled' | 'pending' | 'failed' | 'unavailable';
+    issuance: "pending" | "completed" | "failed";
+    renewal: "scheduled" | "pending" | "failed" | "unavailable";
     error?: { code: string; message: string } | null;
   } | null;
+  type: "uploaded" | "managed";
   used_by: { id: number; type: string }[];
 }
 
 // Placement Group
 export interface PlacementGroup {
-  id: number;
-  name: string;
-  labels: Labels;
-  type: 'spread';
-  servers: number[];
   created: string;
+  id: number;
+  labels: Labels;
+  name: string;
+  servers: number[];
+  type: "spread";
 }

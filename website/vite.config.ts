@@ -14,13 +14,17 @@ function ogAbsoluteUrls(): Plugin {
       base = config.base;
     },
     transformIndexHtml(html) {
-      if (process.env.NODE_ENV !== "production") return html;
+      if (process.env.NODE_ENV !== "production") {
+        return html;
+      }
       return html.replace(
         /(<meta\s+(?:property|name)="(?:og|twitter):image"\s+content=")([^"]+)(")/g,
         (_: string, before: string, url: string, after: string) => {
-          if (url.startsWith("http")) return before + url + after;
+          if (url.startsWith("http")) {
+            return before + url + after;
+          }
           return before + PROD_ORIGIN + base + url + after;
-        },
+        }
       );
     },
   };
