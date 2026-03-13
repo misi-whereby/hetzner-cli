@@ -707,9 +707,12 @@ describe("HetznerRobotClient", () => {
     });
 
     it("should delete SSH key", async () => {
+      const headers = new Map([["Content-Length", 0]]);
+
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        status: 204,
+        status: 200,
+        headers,
       });
 
       await client.deleteSshKey("ab:cd:ef");

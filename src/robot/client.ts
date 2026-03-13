@@ -83,6 +83,12 @@ export class HetznerRobotClient {
       return {} as T;
     }
 
+    // Handle 200 No Content
+    const contentLength = response.headers?.get('Content-Length')
+    if (response.status === 200 && contentLength !== undefined && Number(contentLength) == 0) {
+        return {} as T;
+    }
+
     return response.json() as Promise<T>;
   }
 
